@@ -1,0 +1,68 @@
+{
+  "generated": "2026-11-01T00:00:00Z",
+  "trendSince": "2026-10-25",
+  "packs": [
+    {"id": "starter", "title": "Starter pack", "repos": ["acme/player", "acme/launcher"]}
+  ],
+  "apps": [
+    {
+      "id": "acme-player",
+      "repo": "acme/player",
+      "name": "Acme Player",
+      "package": "org.acme.player",
+      "versionCode": 42,
+      "versionName": "1.4.2",
+      "minSdk": 21,
+      "room": "Video",
+      "note": "A simple video player",
+      "desc": "Plays local and network video",
+      "maker": "acme",
+      "stars": 120,
+      "licence": "GPL-3.0",
+      "archived": false,
+      "version": "v1.4.2",
+      "date": "2026-10-20",
+      "certSha256": "aabbcc",
+      "art": {"banner": "https://example.com/banner.png", "feature": null, "icon": "https://example.com/icon.png", "shots": ["https://example.com/1.png", "https://example.com/2.png"]},
+      "apks": [
+        {"name": "player-arm64-v8a.apk", "abi": "arm64-v8a", "url": "https://example.com/a64.apk", "size": 1000},
+        {"name": "player-armeabi-v7a.apk", "abi": "armeabi-v7a", "url": "https://example.com/a32.apk", "size": 900},
+        {"name": "player-x86_64.apk", "abi": "any", "url": "https://example.com/x64.apk", "size": 1100}
+      ],
+      "releases": [
+        {"tag": "v1.4.2", "date": "2026-10-20"},
+        {"tag": "v1.4.1", "date": "2026-09-30"}
+      ],
+      "forkOf": "someone/player",
+      "parentStars": 5000,
+      "added": "2026-08-01",
+      "basedOn": "someone/player",
+      "pushed": "2026-10-21",
+      "downloads": 777,
+      "perms": ["INTERNET", "READ_EXTERNAL_STORAGE"],
+      "trend": 9,
+      "code": 1234
+    },
+    {
+      "id": "acme-launcher",
+      "repo": "acme/launcher",
+      "name": "Acme Launcher",
+      "package": "org.acme.launcher",
+      "versionCode": 7,
+      "versionName": null,
+      "minSdk": null,
+      "room": "Home",
+      "note": "IPTV friendly launcher",
+      "maker": "acme",
+      "stars": 3,
+      "licence": null,
+      "version": "0.7",
+      "date": "2026-09-01",
+      "certSha256": null,
+      "apks": [
+        {"name": "launcher-universal.apk", "abi": "any", "url": "https://example.com/l.apk", "size": 500}
+      ],
+      "releases": [{"tag": "0.7", "date": "2026-09-01"}]
+    }
+  ]
+}
