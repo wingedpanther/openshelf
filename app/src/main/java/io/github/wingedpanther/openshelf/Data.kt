@@ -111,7 +111,7 @@ object Catalog {
     private fun JSONObject.str(k: String): String? = if (has(k) && !isNull(k)) getString(k) else null
     private fun JSONArray.objects() = (0 until length()).map { getJSONObject(it) }
 
-    private fun parse(o: JSONObject): App {
+    internal fun parse(o: JSONObject): App {
         val art = o.optJSONObject("art") ?: JSONObject()
         val shots = art.optJSONArray("shots")?.let { a -> (0 until a.length()).map { a.getString(it) } }.orEmpty()
         return App(
@@ -203,6 +203,10 @@ object CatalogUpdate {
     fun verify(data: ByteArray, sig: ByteArray): Boolean = runCatching {
         val key = java.security.KeyFactory.getInstance("EC")
             .generatePublic(java.security.spec.X509EncodedKeySpec(android.util.Base64.decode(KEY, android.util.Base64.DEFAULT)))
+        verify(data, sig, key)
+    }.getOrDefault(false)
+
+    internal fun verify(data: ByteArray, sig: ByteArray, key: java.security.PublicKey): Boolean = runCatching {
         java.security.Signature.getInstance("SHA256withECDSA").run {
             initVerify(key)
             update(data)
@@ -425,8 +429,8 @@ fun unsupported(app: App): String? {
     return null
 }
 
-fun pickApk(app: App): Apk {
-    for (abi in Build.SUPPORTED_ABIS) app.apks.firstOrNull { it.abi == abi }?.let { return it }
+fun pickApk(app: App, supported: List<String> = Build.SUPPORTED_ABIS.toList()): Apk {
+    for (abi in supported) app.apks.firstOrNull { it.abi == abi }?.let { return it }
     return app.apks.firstOrNull { it.abi == "universal" } ?: app.apks.firstOrNull { it.abi == "any" } ?: app.apks.first()
 }
 

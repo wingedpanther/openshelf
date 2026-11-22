@@ -32,6 +32,16 @@ sealed interface Job {
     data class Held(val message: String) : Job
 }
 
+internal enum class SignatureRule { OK, KEY_CHANGED, SIBLING, OTHER_BUILD }
+
+internal fun signatureRule(catalogCert: String?, fileCerts: Set<String>, installedCerts: Set<String>?, siblingRepo: String?): SignatureRule {
+    if (fileCerts.isNotEmpty() && catalogCert != null && catalogCert !in fileCerts) return SignatureRule.KEY_CHANGED
+    if (installedCerts != null && installedCerts.isNotEmpty() && fileCerts.isNotEmpty() && installedCerts.intersect(fileCerts).isEmpty()) {
+        return if (siblingRepo != null) SignatureRule.SIBLING else SignatureRule.OTHER_BUILD
+    }
+    return SignatureRule.OK
+}
+
 object Installer {
     val jobs = mutableStateMapOf<String, Job>()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -181,15 +191,14 @@ object Installer {
 
     private fun checkSignature(ctx: Context, app: App, file: File): String? {
         val fileCerts = Device.archiveCerts(ctx, file)
-        if (fileCerts.isNotEmpty() && app.certSha256 != null && app.certSha256 !in fileCerts) {
-            return str(R.string.held_key_changed, app.name)
-        }
         val installed = Device.installed(ctx, app.pkg)
-        if (installed != null && installed.certs.isNotEmpty() && fileCerts.isNotEmpty() && installed.certs.intersect(fileCerts).isEmpty()) {
-            Catalog.sibling(app, installed)?.let { return str(R.string.held_sibling, app.name, it.repo) }
-            return str(R.string.held_other_build, app.name)
+        val sibling = installed?.let { Catalog.sibling(app, it) }
+        return when (signatureRule(app.certSha256, fileCerts, installed?.certs, sibling?.repo)) {
+            SignatureRule.OK -> null
+            SignatureRule.KEY_CHANGED -> str(R.string.held_key_changed, app.name)
+            SignatureRule.SIBLING -> str(R.string.held_sibling, app.name, sibling!!.repo)
+            SignatureRule.OTHER_BUILD -> str(R.string.held_other_build, app.name)
         }
-        return null
     }
 
     private fun commit(ctx: Context, app: App, file: File): Int {

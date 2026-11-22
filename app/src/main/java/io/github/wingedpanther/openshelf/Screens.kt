@@ -1293,7 +1293,13 @@ private fun otherApps(ctx: Context, exclude: Set<String>): List<LocalApp> {
         .sortedBy { it.label.lowercase() }
 }
 
-private enum class AppSort { Default, Name, Date }
+internal enum class AppSort { Default, Name, Date }
+
+internal fun sortApps(mine: List<Pair<App, Installed>>, sort: AppSort): List<Pair<App, Installed>> = when (sort) {
+    AppSort.Default -> mine
+    AppSort.Name -> mine.sortedBy { it.first.name.lowercase() }
+    AppSort.Date -> mine.sortedByDescending { it.first.date }
+}
 
 private fun shelfApps(ctx: Context): List<Pair<App, Installed>> {
     val own = SelfUpdate.app?.takeIf { SelfUpdate.ready(ctx) }?.let { listOf(it to Device.installed(ctx, it.pkg)!!) }.orEmpty()
@@ -1323,11 +1329,7 @@ private fun MyApps(openApp: (String) -> Unit, goDiscover: () -> Unit, handoff: F
         manual + shelfApps(ctx).filterNot { it.first.pkg in linked }
     }
     val sortedMine = remember(mine, Prefs.appSort) {
-        when (AppSort.entries[Prefs.appSort]) {
-            AppSort.Default -> mine
-            AppSort.Name -> mine.sortedBy { it.first.name.lowercase() }
-            AppSort.Date -> mine.sortedByDescending { it.first.date }
-        }
+        sortApps(mine, AppSort.entries[Prefs.appSort])
     }
     var others by remember { mutableStateOf<List<LocalApp>?>(null) }
     LaunchedEffect(tick, mine) { others = withContext(Dispatchers.IO) { otherApps(ctx, mine.map { it.first.pkg }.toSet()) } }

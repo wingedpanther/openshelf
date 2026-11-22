@@ -110,8 +110,8 @@ object ManualLinks {
         }
     }
 
-    private fun pickApkFromList(apks: List<Apk>): Apk? {
-        for (abi in android.os.Build.SUPPORTED_ABIS) {
+    internal fun pickApkFromList(apks: List<Apk>, supported: List<String> = android.os.Build.SUPPORTED_ABIS.toList()): Apk? {
+        for (abi in supported) {
             apks.firstOrNull { it.abi == abi }?.let { return it }
         }
         return apks.firstOrNull { it.abi == "universal" } ?: apks.firstOrNull { it.abi == "any" }
