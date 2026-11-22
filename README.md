@@ -109,6 +109,8 @@ Needs JDK 17 or newer and the Android SDK. Point `local.properties` at the SDK (
 ./gradlew assembleRelease
 ```
 
+To run the unit tests: `./gradlew test`.
+
 Release builds are signed with the debug key unless a `keystore.properties` file sits in the project root with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`.
 
 ## Translations
