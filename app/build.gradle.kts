@@ -17,8 +17,8 @@ android {
         applicationId = "io.github.wingedpanther.openshelf"
         minSdk = 23
         targetSdk = 36
-        versionCode = 15
-        versionName = "0.10.0"
+        versionCode = 16
+        versionName = "0.10.1"
     }
 
     signingConfigs {
