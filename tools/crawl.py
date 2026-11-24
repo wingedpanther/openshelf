@@ -151,7 +151,7 @@ fragment R on Repository {
   parent { nameWithOwner }
   defaultBranchRef { name }
   repositoryTopics(first: 12) { nodes { topic { name } } }
-  latestRelease { tagName publishedAt releaseAssets(first: 50) { nodes { name size downloadUrl downloadCount } } }
+  latestRelease { tagName publishedAt releaseAssets(first: 50) { nodes { name size downloadUrl downloadCount digest } } }
   releases(first: 5, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { tagName publishedAt isPrerelease isDraft releaseAssets(first: 30) { nodes { name downloadCount } } } }
 }"""
 
@@ -717,7 +717,8 @@ def build(work: Path, out_path: Path):
             "date": rel["publishedAt"][:10],
             "certSha256": tv.get("cert"),
             "art": {k: v for k, v in a.items() if v and k != "title"},
-            "apks": [{"name": x["name"], "abi": abi_of(x["name"]), "url": x["downloadUrl"], "size": x["size"]} for x in assets],
+            "apks": [{"name": x["name"], "abi": abi_of(x["name"]), "url": x["downloadUrl"], "size": x["size"],
+                      **({"sha256": x["digest"][7:]} if (x.get("digest") or "").startswith("sha256:") else {})} for x in assets],
             "releases": [{"tag": r["tagName"], "date": r["publishedAt"][:10]}
                          for r in m["releases"]["nodes"] if not r["isPrerelease"] and not r["isDraft"]][:4],
         }
