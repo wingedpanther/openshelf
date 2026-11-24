@@ -107,9 +107,12 @@ object Installer {
                 if (session != null) {
                     current[app.id] = session
                     delay(INSTALL_TIMEOUT)
-                    if (current[app.id] == session && session !in answered && jobs[app.id] == Job.Installing) {
+                    fun waiting() = current[app.id] == session && session !in answered && jobs[app.id] == Job.Installing
+                    while (waiting() && !onScreen) delay(RECHECK)
+                    if (waiting()) {
                         runCatching { appCtx.packageManager.packageInstaller.abandonSession(session) }
                         failed(app.id, str(R.string.err_install_timeout))
+                        settled(appCtx, app.id)
                     }
                 }
             } catch (e: Exception) {
@@ -120,6 +123,8 @@ object Installer {
 
     private const val MAX_TRIES = 3
     private const val INSTALL_TIMEOUT = 90_000L
+    private const val RECHECK = 5_000L
+    var onScreen = false
     private val current = HashMap<String, Int>()
     private val answered = HashSet<Int>()
 
@@ -286,16 +291,18 @@ object Installer {
     }
 
     fun cancelled(id: String) {
-        jobs.remove(id)
+        if (jobs[id] == Job.Installing) jobs.remove(id)
     }
 }
 
 class InstallResultReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
         val id = intent.getStringExtra("appId") ?: return
-        Installer.answered(intent.getIntExtra("session", -1))
         val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_FAILURE)
-        if (status != PackageInstaller.STATUS_PENDING_USER_ACTION) Installer.settled(ctx, id)
+        if (status != PackageInstaller.STATUS_PENDING_USER_ACTION) {
+            Installer.answered(intent.getIntExtra("session", -1))
+            Installer.settled(ctx, id)
+        }
         when (status) {
             PackageInstaller.STATUS_PENDING_USER_ACTION -> Installer.confirm(ctx, intent)
             PackageInstaller.STATUS_SUCCESS -> Installer.finished(ctx.applicationContext, id)

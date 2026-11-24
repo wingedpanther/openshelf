@@ -39,6 +39,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        Installer.onScreen = true
         Device.tick++
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Installer.onScreen = false
     }
 }
