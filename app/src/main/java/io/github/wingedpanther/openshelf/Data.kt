@@ -10,6 +10,7 @@ import android.os.StatFs
 import android.util.LruCache
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
@@ -695,8 +696,21 @@ object Prefs {
     val dark: Boolean get() = when (theme) { 1 -> false; 2 -> true; else -> systemDark }
     private lateinit var file: android.content.SharedPreferences
 
+    val acceptedKeys = mutableStateMapOf<String, String>()
+
+    fun acceptKey(pkg: String, cert: String) {
+        acceptedKeys[pkg] = cert
+        file.edit().putString("key.$pkg", cert).apply()
+    }
+
+    fun forgetKey(pkg: String) {
+        acceptedKeys.remove(pkg)
+        file.edit().remove("key.$pkg").apply()
+    }
+
     fun init(ctx: Context) {
         file = ctx.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+        file.all.forEach { (k, v) -> if (k.startsWith("key.") && v is String) acceptedKeys[k.removePrefix("key.")] = v }
         accent = file.getInt("accent", 0).coerceIn(accents.indices)
         theme = file.getInt("theme", 0).coerceIn(themes.indices)
         hideStreams = file.getBoolean("hideStreams", true)

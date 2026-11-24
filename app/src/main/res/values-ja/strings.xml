@@ -118,6 +118,9 @@
     <string name="sig_unrecorded">まだ記録されていません。Androidはインストール済みのコピーに対して更新を確認します。</string>
     <string name="sig_checked">インストール前に開発者のキーと照合</string>
     <string name="sig_mismatch">開発者のキーと異なります。更新は保留されています。</string>
+    <string name="sig_ignored">このアプリでは無視中。変更時は再警告します。</string>
+    <string name="key_ignore">このアプリでは無視</string>
+    <string name="key_check_on">チェックを再開</string>
     <string name="sig_sibling">このテレビには%1$sビルドがあります。切り替えるにはアンインストールしてください。</string>
     <string name="sig_matches">開発者のキーと一致</string>
     <string name="file_picked_any">すべてのテレビ用に選択されたファイル</string>
@@ -156,6 +159,7 @@
     <string name="find_app">アプリを探す</string>
     <string name="held_sub">%1$s · 異なるキーで署名</string>
     <string name="update_held">更新保留</string>
+    <string name="status_key_ignored">キー確認オフ</string>
     <string name="review">確認</string>
     <string name="up_to_date">最新です</string>
     <string name="details">詳細</string>
@@ -177,7 +181,7 @@
     <string name="set_apk_help">多くのアプリはチップの種類ごとに異なるファイルを公開しています。Open Shelfはこのテレビに合うものを選びます。ここで対応：%1$s。</string>
     <string name="set_key">アプリの署名キーが変更された場合</string>
     <string name="set_key_value">更新を保留</string>
-    <string name="set_key_help">すべてのリリースは開発者により署名されています。新しいファイルが別の者により署名されている場合、Open Shelfは現在のバージョンを保持し、インストールしません。</string>
+    <string name="set_key_help">すべてのリリースは開発者により署名されています。新しいファイルが別の者により署名されている場合、Open Shelfは現在のバージョンを保持し、インストールしません。例外として許可するには、そのアプリのページを開き「このアプリでは無視」を選んでください。</string>
     <string name="set_catalog">カタログ</string>
     <string name="catalog_value">%1$s個のアプリ · %2$s</string>
     <string name="catalog_help">APKを公開し、過去3年以内にリリースがあるGitHub上のAndroid TVアプリすべて。%1$sに確認。Open Shelfは毎週新しいリストをダウンロードし、署名を確認してから使います。</string>

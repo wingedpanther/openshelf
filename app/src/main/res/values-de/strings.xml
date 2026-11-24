@@ -120,6 +120,9 @@
     <string name="sig_unrecorded">Noch nicht erfasst. Android gleicht Updates weiterhin mit der installierten Version ab.</string>
     <string name="sig_checked">Vor der Installation mit Entwicklerschlüssel abgeglichen</string>
     <string name="sig_mismatch">Weicht vom Entwicklerschlüssel ab. Updates werden zurückgehalten.</string>
+    <string name="sig_ignored">Für diese App ignoriert. Warnt erneut bei Änderung.</string>
+    <string name="key_ignore">Für diese App ignorieren</string>
+    <string name="key_check_on">Prüfung wieder einschalten</string>
     <string name="sig_sibling">Dieser TV hat den %1$s-Build. Deinstalliere ihn, um zu wechseln.</string>
     <string name="sig_matches">Stimmt mit dem Entwicklerschlüssel überein</string>
     <string name="file_picked_any">Datei für alle TVs ausgewählt</string>
@@ -161,6 +164,7 @@
     <string name="find_app">App suchen</string>
     <string name="held_sub">%1$s · mit anderem Schlüssel signiert</string>
     <string name="update_held">Update zurückgehalten</string>
+    <string name="status_key_ignored">Schlüsselprüfung aus</string>
     <string name="review">Überprüfen</string>
     <string name="up_to_date">Auf dem neuesten Stand</string>
     <string name="details">Details</string>
@@ -182,7 +186,7 @@
     <string name="set_apk_help">Viele Apps veröffentlichen für jeden Chiptyp eine eigene Datei. Open Shelf wählt die passende für diesen TV aus. Hier unterstützt: %1$s.</string>
     <string name="set_key">Bei neuem Signaturschlüssel</string>
     <string name="set_key_value">Update zurückhalten</string>
-    <string name="set_key_help">Jedes Release wird von den Entwicklern signiert. Wenn eine neue Datei von jemand anderem signiert ist, behält Open Shelf die aktuelle Version und installiert sie nicht.</string>
+    <string name="set_key_help">Jedes Release wird von den Entwicklern signiert. Wenn eine neue Datei von jemand anderem signiert ist, behält Open Shelf die aktuelle Version und installiert sie nicht. Um eine App trotzdem zuzulassen, öffne ihre Seite und wähle „Für diese App ignorieren“.</string>
     <string name="set_catalog">Katalog</string>
     <string name="catalog_value">%1$s Apps · %2$s</string>
     <string name="catalog_help">Alle Android-TV-Apps auf GitHub, die eine APK veröffentlichen und in den letzten 3 Jahren ein Release hatten. Geprüft am %1$s. Open Shelf lädt jede Woche eine neue Liste und prüft vorher ihre Signatur.</string>

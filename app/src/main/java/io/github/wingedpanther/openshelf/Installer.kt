@@ -29,17 +29,25 @@ sealed interface Job {
     data object Checking : Job
     data object Installing : Job
     data class Failed(val message: String) : Job
-    data class Held(val message: String) : Job
+    data class Held(val message: String, val cert: String? = null) : Job
 }
 
 internal enum class SignatureRule { OK, KEY_CHANGED, SIBLING, OTHER_BUILD }
 
-internal fun signatureRule(catalogCert: String?, fileCerts: Set<String>, installedCerts: Set<String>?, siblingRepo: String?): SignatureRule {
-    if (fileCerts.isNotEmpty() && catalogCert != null && catalogCert !in fileCerts) return SignatureRule.KEY_CHANGED
+internal fun signatureRule(catalogCert: String?, fileCerts: Set<String>, installedCerts: Set<String>?, siblingRepo: String?, accepted: String? = null): SignatureRule {
+    if (fileCerts.isNotEmpty() && catalogCert != null && catalogCert !in fileCerts && (accepted == null || accepted !in fileCerts)) return SignatureRule.KEY_CHANGED
     if (installedCerts != null && installedCerts.isNotEmpty() && fileCerts.isNotEmpty() && installedCerts.intersect(fileCerts).isEmpty()) {
         return if (siblingRepo != null) SignatureRule.SIBLING else SignatureRule.OTHER_BUILD
     }
     return SignatureRule.OK
+}
+
+internal enum class KeyStatus { MATCHES, IGNORED, DIFFERS }
+
+internal fun keyStatus(catalogCert: String?, installedCerts: Set<String>, accepted: String?): KeyStatus = when {
+    catalogCert == null || installedCerts.isEmpty() || catalogCert in installedCerts -> KeyStatus.MATCHES
+    accepted != null && accepted in installedCerts -> KeyStatus.IGNORED
+    else -> KeyStatus.DIFFERS
 }
 
 object Installer {
@@ -86,7 +94,7 @@ object Installer {
                 }
                 val held = withContext(Dispatchers.IO) { checkSignature(appCtx, target, file) }
                 if (held != null) {
-                    jobs[app.id] = Job.Held(held)
+                    jobs[app.id] = Job.Held(held.first, held.second)
                     return@launch
                 }
                 jobs[app.id] = Job.Installing
@@ -189,15 +197,18 @@ object Installer {
         }
     }
 
-    private fun checkSignature(ctx: Context, app: App, file: File): String? {
+    private fun checkSignature(ctx: Context, app: App, file: File): Pair<String, String?>? {
         val fileCerts = Device.archiveCerts(ctx, file)
         val installed = Device.installed(ctx, app.pkg)
         val sibling = installed?.let { Catalog.sibling(app, it) }
-        return when (signatureRule(app.certSha256, fileCerts, installed?.certs, sibling?.repo)) {
+        return when (signatureRule(app.certSha256, fileCerts, installed?.certs, sibling?.repo, Prefs.acceptedKeys[app.pkg])) {
             SignatureRule.OK -> null
-            SignatureRule.KEY_CHANGED -> str(R.string.held_key_changed, app.name)
-            SignatureRule.SIBLING -> str(R.string.held_sibling, app.name, sibling!!.repo)
-            SignatureRule.OTHER_BUILD -> str(R.string.held_other_build, app.name)
+            SignatureRule.KEY_CHANGED -> {
+                val key = fileCerts.first()
+                str(R.string.held_key_changed, app.name) to key.takeIf { c -> signatureRule(app.certSha256, fileCerts, installed?.certs, sibling?.repo, c) == SignatureRule.OK }
+            }
+            SignatureRule.SIBLING -> str(R.string.held_sibling, app.name, sibling!!.repo) to null
+            SignatureRule.OTHER_BUILD -> str(R.string.held_other_build, app.name) to null
         }
     }
 

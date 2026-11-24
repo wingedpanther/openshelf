@@ -102,6 +102,9 @@
     <string name="sig_unrecorded">Aún no se ha registrado. Android sigue comprobando las actualizaciones con la copia instalada.</string>
     <string name="sig_checked">Comprobada con la clave del desarrollador antes de instalar</string>
     <string name="sig_mismatch">Distinta de la clave del desarrollador. Las actualizaciones están retenidas.</string>
+    <string name="sig_ignored">Ignorada para esta app. Avisa de nuevo si cambia.</string>
+    <string name="key_ignore">Ignorar para esta app</string>
+    <string name="key_check_on">Reactivar la comprobación</string>
     <string name="sig_sibling">Este televisor tiene la compilación %1$s. Desinstálala para cambiar.</string>
     <string name="sig_matches">Coincide con la clave del desarrollador</string>
     <string name="file_picked_any">Archivo elegido para cualquier televisor</string>
@@ -143,6 +146,7 @@
     <string name="find_app">Buscar una app</string>
     <string name="held_sub">%1$s · firmada con una clave distinta</string>
     <string name="update_held">Actualización retenida</string>
+    <string name="status_key_ignored">Clave sin comprobar</string>
     <string name="review">Revisar</string>
     <string name="up_to_date">Al día</string>
     <string name="details">Detalles</string>
@@ -164,7 +168,7 @@
     <string name="set_apk_help">Muchas apps publican un archivo distinto para cada tipo de procesador. Open Shelf elige el adecuado para este televisor. Compatibles aquí: %1$s.</string>
     <string name="set_key">Si cambia la clave de firma de una app</string>
     <string name="set_key_value">Retener la actualización</string>
-    <string name="set_key_help">Cada versión está firmada por su desarrollador. Si un archivo nuevo está firmado por otra persona, Open Shelf conserva tu versión actual y no lo instala.</string>
+    <string name="set_key_help">Cada versión está firmada por su desarrollador. Si un archivo nuevo está firmado por otra persona, Open Shelf conserva tu versión actual y no lo instala. Para permitir una app de todos modos, abre su página y elige Ignorar para esta app.</string>
     <string name="set_catalog">Catálogo</string>
     <string name="catalog_value">%1$s apps · %2$s</string>
     <string name="catalog_help">Todas las apps de Android TV en GitHub que publican un APK y han tenido una versión en los últimos 3 años. Revisado el %1$s. Open Shelf descarga una lista nueva cada semana y comprueba su firma antes de usarla.</string>

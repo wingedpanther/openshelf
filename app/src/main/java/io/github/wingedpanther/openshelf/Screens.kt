@@ -165,7 +165,7 @@ fun OpenShelf() {
 
     val updates = remember(Device.tick, SelfUpdate.app) { updateCount(ctx) }
     LaunchedEffect(updates, Catalog.apps) {
-        val ready = shelfApps(ctx).filter { (a, i) -> a.pkg != ctx.packageName && i.versionCode < a.versionCode && (a.certSha256 == null || i.certs.isEmpty() || a.certSha256 in i.certs) }
+        val ready = shelfApps(ctx).filter { (a, i) -> a.pkg != ctx.packageName && i.versionCode < a.versionCode && keyOf(a, i) == KeyStatus.MATCHES }
         val picks = Catalog.trending().take(8).ifEmpty { Catalog.added().take(8) }
         withContext(Dispatchers.IO) { HomeRow.sync(ctx, ready, picks) }
     }
@@ -896,6 +896,8 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
             if (app.id.startsWith("direct-")) T(str(R.string.direct_warning), 11.5.sp, Modifier.padding(top = 4.dp), color = C.Stone)
             else if (app.archived) T(str(R.string.archived_note), 11.5.sp, Modifier.padding(top = 4.dp), color = C.Stone)
             else if (stale) T(str(R.string.stale_note, Fmt.monthYear(app.date)), 11.5.sp, Modifier.padding(top = 4.dp), color = C.Stone)
+            val ks = installed?.let { keyOf(app, it) } ?: KeyStatus.MATCHES
+            val acceptable = (installed?.takeIf { other == null && ks == KeyStatus.DIFFERS }?.certs?.firstOrNull()) ?: (Installer.jobs[app.id] as? Job.Held)?.cert
             Row(Modifier.padding(top = 10.dp).offset(x = (-4).dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 InstallButton(app, requester = handoff.target)
                 if (installed != null && !Installer.busy(app.id)) Pill(if (installed.versionCode < app.versionCode) "" else str(R.string.uninstall), { uninstall(ctx, app.pkg) }, icon = Icons.Trash)
@@ -916,12 +918,13 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
                     Prov(Icons.Box, str(R.string.prov_download), if (app.downloads > 0) "${Fmt.mb(apk.size)} · ${L.wrap(Fmt.downloads(app.downloads))}" else Fmt.mb(apk.size), Modifier.weight(1f))
                 }
                 val cert = app.certSha256
-                val mismatch = installed != null && cert != null && installed.certs.isNotEmpty() && cert !in installed.certs
+                val mismatch = ks == KeyStatus.DIFFERS
                 val sig = when {
                     other != null -> str(R.string.sig_sibling, other.repo)
                     cert == null -> str(R.string.sig_unrecorded)
                     installed == null -> str(R.string.sig_checked)
                     mismatch -> str(R.string.sig_mismatch)
+                    ks == KeyStatus.IGNORED -> str(R.string.sig_ignored)
                     else -> str(R.string.sig_matches)
                 }
                 Prov(if (mismatch || other != null) Icons.ShieldAlert else Icons.Shield, str(R.string.prov_signing), sig)
@@ -932,6 +935,12 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
                 Modifier.padding(top = 14.dp).offset(x = (-4).dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
             ) {
+                val ignoring = acceptable != null && !Installer.busy(app.id)
+                if (ignoring || Prefs.acceptedKeys[app.pkg] != null) Pill(
+                    str(if (ignoring) R.string.key_ignore else R.string.key_check_on),
+                    { if (ignoring) { Prefs.acceptKey(app.pkg, acceptable!!); Installer.jobs.remove(app.id) } else Prefs.forgetKey(app.pkg); Device.tick++ },
+                    icon = if (ignoring) Icons.Shield else Icons.ShieldAlert,
+                )
                 if (browser) Pill("GitHub", { openRepo(ctx, app.repo) }, icon = Icons.Link)
                 if (notes != null) Pill(str(R.string.whats_new_short), { showNotes = true })
                 if (permissions.isNotEmpty()) Pill(str(R.string.permissions_action), { showPermissions = true })
@@ -1271,7 +1280,7 @@ private fun ResultCard(a: App, q: String, byName: Boolean, onClick: () -> Unit) 
     }
 }
 
-private enum class State { Busy, Held, Update, Ok }
+private enum class State { Busy, Held, Ignored, Update, Ok }
 
 private data class LocalApp(val pkg: String, val label: String, val version: String?, val icon: ImageBitmap?)
 
@@ -1309,8 +1318,10 @@ private fun shelfApps(ctx: Context): List<Pair<App, Installed>> {
     }
 }
 
+private fun keyOf(a: App, i: Installed) = keyStatus(a.certSha256, i.certs, Prefs.acceptedKeys[a.pkg])
+
 private fun updateCount(ctx: Context): Int = shelfApps(ctx).count { (a, i) ->
-    i.versionCode < a.versionCode && (a.certSha256 == null || i.certs.isEmpty() || a.certSha256 in i.certs)
+    i.versionCode < a.versionCode && keyOf(a, i) == KeyStatus.MATCHES
 }
 
 @Composable
@@ -1337,7 +1348,8 @@ private fun MyApps(openApp: (String) -> Unit, goDiscover: () -> Unit, handoff: F
     var digest by remember { mutableStateOf<List<App>?>(null) }
     fun state(a: App, i: Installed): State = when {
         Installer.busy(a.id) -> State.Busy
-        Installer.jobs[a.id] is Job.Held || (a.certSha256 != null && i.certs.isNotEmpty() && a.certSha256 !in i.certs) -> State.Held
+        Installer.jobs[a.id] is Job.Held || keyOf(a, i) == KeyStatus.DIFFERS -> State.Held
+        keyOf(a, i) == KeyStatus.IGNORED -> State.Ignored
         i.versionCode < a.versionCode -> State.Update
         else -> State.Ok
     }
@@ -1411,6 +1423,7 @@ private fun MyApps(openApp: (String) -> Unit, goDiscover: () -> Unit, handoff: F
                         }
                         State.Update -> { Ico(Icons.Up, 17.dp, C.accent); T("  " + str(R.string.status_update_ready), 12.5.sp, color = C.Ink2, weight = FontWeight.Medium); MiniPill(str(R.string.action_update), f) }
                         State.Held -> { Ico(Icons.ShieldAlert, 17.dp, C.Ink); T("  " + str(R.string.update_held), 12.5.sp, weight = FontWeight.SemiBold); MiniPill(str(R.string.review), f) }
+                        State.Ignored -> { Ico(Icons.Shield, 17.dp, C.Stone); T("  " + str(R.string.status_key_ignored), 12.5.sp, color = C.Stone); MiniPill(str(R.string.details), f) }
                         State.Ok -> {
                             Ico(Icons.Check, 17.dp, C.Stone); T("  " + str(R.string.up_to_date), 12.5.sp, color = C.Stone)
                             MiniPill(str(R.string.details), f)

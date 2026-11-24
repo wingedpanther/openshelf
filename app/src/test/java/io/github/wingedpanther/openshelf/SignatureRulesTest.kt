@@ -48,4 +48,22 @@ class SignatureRulesTest {
     @Test fun anyOverlappingCertCounts() {
         assertEquals(SignatureRule.OK, signatureRule(null, setOf(mine, other), setOf(other, "cc"), "o/sibling"))
     }
+
+    @Test fun acceptedKeyInTheFileIsOk() {
+        assertEquals(SignatureRule.OK, signatureRule(mine, setOf(other), setOf(other), null, accepted = other))
+        assertEquals(SignatureRule.OK, signatureRule(mine, setOf(other), null, null, accepted = other))
+    }
+
+    @Test fun aThirdKeyWarnsAgain() {
+        assertEquals(SignatureRule.KEY_CHANGED, signatureRule(mine, setOf("cc"), setOf(other), null, accepted = other))
+    }
+
+    @Test fun acceptedKeyDoesNotBypassAndroidsOwnRule() {
+        assertEquals(SignatureRule.OTHER_BUILD, signatureRule(mine, setOf(other), setOf(mine), null, accepted = other))
+        assertEquals(SignatureRule.SIBLING, signatureRule(mine, setOf(other), setOf(mine), "o/sibling", accepted = other))
+    }
+
+    @Test fun noAcceptedKeyBehavesAsBefore() {
+        assertEquals(SignatureRule.KEY_CHANGED, signatureRule(mine, setOf(other), setOf(other), null, accepted = null))
+    }
 }

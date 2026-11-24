@@ -106,6 +106,9 @@
     <string name="sig_unrecorded">غير مسجّل بعد. سيتحقّق النظام من التحديثات بمقارنتها مع النسخة المثبّتة لديك.</string>
     <string name="sig_checked">تم التحقّق من مطابقته لتوقيع المطوّر قبل التثبيت</string>
     <string name="sig_mismatch">يختلف عن توقيع المطوّر الأصلي. تم إيقاف التحديثات.</string>
+    <string name="sig_ignored">تم تجاهله لهذا التطبيق. ينبّه مجدداً عند تغيّره.</string>
+    <string name="key_ignore">تجاهل لهذا التطبيق</string>
+    <string name="key_check_on">إعادة تفعيل الفحص</string>
     <string name="sig_sibling">شاشتك فيها نسخة %1$s. احذفها لتتمكّن من التحوّل لهذه النسخة.</string>
     <string name="sig_matches">مطابق لتوقيع المطوّر</string>
     <string name="file_picked_any">الملف المختار والمتوافق مع جميع الشاشات</string>
@@ -159,6 +162,7 @@
     <string name="find_app">ابحث عن تطبيق</string>
     <string name="held_sub">%1$s · توقيعه مختلف</string>
     <string name="update_held">التحديث معلّق</string>
+    <string name="status_key_ignored">فحص التوقيع متوقف</string>
     <string name="review">مراجعة</string>
     <string name="up_to_date">محدّث لآخر إصدار</string>
     <string name="details">التفاصيل</string>
@@ -180,7 +184,7 @@
     <string name="set_apk_help">كثير من التطبيقات توفّر أكثر من ملف حسب معالج الشاشة. يختار Open Shelf الملف المناسب لشاشتك تلقائياً. المدعوم هنا: %1$s.</string>
     <string name="set_key">إذا تغيّر توقيع التطبيق</string>
     <string name="set_key_value">إيقاف التحديث مؤقتاً</string>
-    <string name="set_key_help">كل إصدار يوقّعه مطوّره. إذا نزل تحديث بتوقيع مختلف، يحتفظ المتجر بنسختك الحالية ولا يثبّته حمايةً لك.</string>
+    <string name="set_key_help">كل إصدار يوقّعه مطوّره. إذا نزل تحديث بتوقيع مختلف، يحتفظ المتجر بنسختك الحالية ولا يثبّته حمايةً لك. للسماح بتطبيق واحد رغم ذلك، افتح صفحته واختر «تجاهل لهذا التطبيق».</string>
     <string name="set_catalog">فهرس التطبيقات</string>
     <string name="catalog_value">عدد التطبيقات: %1$s · %2$s</string>
     <string name="catalog_help">كل تطبيقات Android TV على GitHub التي تنشر ملف APK وصدر لها إصدار خلال آخر 3 سنوات. فُحصت في %1$s. يُنزّل Open Shelf قائمة جديدة كل أسبوع ويتحقق من توقيعها قبل استخدامها.</string>

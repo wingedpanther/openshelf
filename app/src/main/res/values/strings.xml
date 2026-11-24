@@ -120,6 +120,9 @@
     <string name="sig_unrecorded">Not recorded yet. Android still checks updates against your installed copy.</string>
     <string name="sig_checked">Checked against the developer’s key before install</string>
     <string name="sig_mismatch">Different from the developer’s key. Updates are held.</string>
+    <string name="sig_ignored">Ignored for this app. Warns again if it changes.</string>
+    <string name="key_ignore">Ignore for this app</string>
+    <string name="key_check_on">Turn check back on</string>
     <string name="sig_sibling">This TV has the %1$s build. Uninstall it to switch.</string>
     <string name="sig_matches">Matches the developer’s key</string>
     <string name="file_picked_any">File picked for every TV</string>
@@ -161,6 +164,7 @@
     <string name="find_app">Find an app</string>
     <string name="held_sub">%1$s · signed with a different key</string>
     <string name="update_held">Update held</string>
+    <string name="status_key_ignored">Key check off</string>
     <string name="review">Review</string>
     <string name="up_to_date">Up to date</string>
     <string name="details">Details</string>
@@ -182,7 +186,7 @@
     <string name="set_apk_help">Many apps publish a different file for each kind of chip. Open Shelf picks the one that fits this TV. Supported here: %1$s.</string>
     <string name="set_key">If an app’s signing key changes</string>
     <string name="set_key_value">Hold the update</string>
-    <string name="set_key_help">Every release is signed by its developer. If a new file is signed by someone else, Open Shelf keeps your current version and doesn’t install it.</string>
+    <string name="set_key_help">Every release is signed by its developer. If a new file is signed by someone else, Open Shelf keeps your current version and doesn’t install it. To allow one app anyway, open its page and choose Ignore for this app.</string>
     <string name="set_catalog">Catalog</string>
     <string name="catalog_value">%1$s apps · %2$s</string>
     <string name="catalog_help">Every Android TV app on GitHub that publishes an APK and has had a release in the last 3 years. Checked on %1$s. Open Shelf downloads a new list each week and checks its signature before using it.</string>

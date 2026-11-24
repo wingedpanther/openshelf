@@ -118,6 +118,9 @@
     <string name="sig_unrecorded">尚未记录。Android 仍会根据你已安装的副本来检查更新。</string>
     <string name="sig_checked">安装前已对照开发者密钥进行检查</string>
     <string name="sig_mismatch">与开发者密钥不同，更新已暂停。</string>
+    <string name="sig_ignored">已忽略此密钥，变化时再提醒。</string>
+    <string name="key_ignore">对此应用忽略</string>
+    <string name="key_check_on">重新开启检查</string>
     <string name="sig_sibling">这台电视上是 %1$s 版本，卸载后才能切换。</string>
     <string name="sig_matches">与开发者密钥匹配</string>
     <string name="file_picked_any">为所有电视选择的文件</string>
@@ -156,6 +159,7 @@
     <string name="find_app">查找应用</string>
     <string name="held_sub">%1$s · 签名密钥不同</string>
     <string name="update_held">更新已暂停</string>
+    <string name="status_key_ignored">密钥检查已关闭</string>
     <string name="review">审核</string>
     <string name="up_to_date">已是最新</string>
     <string name="details">详情</string>
@@ -177,7 +181,7 @@
     <string name="set_apk_help">许多应用为每种芯片发布不同的文件。Open Shelf 会选择适合这台电视的文件。此处支持：%1$s。</string>
     <string name="set_key">如果应用的签名密钥发生变化</string>
     <string name="set_key_value">暂停更新</string>
-    <string name="set_key_help">每个版本都由开发者签名。如果新文件由他人签名，Open Shelf 会保留你的当前版本而不安装。</string>
+    <string name="set_key_help">每个版本都由开发者签名。如果新文件由他人签名，Open Shelf 会保留你的当前版本而不安装。如需放行某个应用，请打开它的页面并选择“对此应用忽略”。</string>
     <string name="set_catalog">目录</string>
     <string name="catalog_value">%1$s 个应用 · %2$s</string>
     <string name="catalog_help">GitHub 上所有发布 APK、并在过去 3 年内有新版本的 Android TV 应用。检查于 %1$s。Open Shelf 每周下载新列表，并在使用前验证签名。</string>
