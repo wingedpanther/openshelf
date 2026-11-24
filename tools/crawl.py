@@ -479,7 +479,7 @@ def inspect(work: Path):
 
     def stale(full):
         tried = found.get(full)
-        if tried is None or not any(t.get("leanback") for t in tried) and any("urlopen" in t.get("error", "") for t in tried):
+        if tried is None or not any(t.get("leanback") for t in tried) and any("error" in t for t in tried):
             return True
         rel = meta[full]["latestRelease"]
         tags = {t.get("tag") for t in tried} - {None}
