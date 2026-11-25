@@ -319,4 +319,16 @@
     <string name="phone_body">Scan the code with your phone on the same Wi-Fi. Search there, press Install, then confirm on the TV. Keep this screen open while you use it.</string>
     <string name="phone_offline">This TV isn’t on a home network, so your phone can’t reach it. Connect the TV to Wi-Fi or Ethernet and try again.</string>
     <string name="pack_held">Held, key differs</string>
+    <string name="job_speed">%1$s, about %2$s left</string>
+    <string name="eta_seconds">%d s</string>
+    <string name="eta_minutes">%d min</string>
+    <string name="eta_hours">%1$d h %2$d min</string>
+    <string name="err_space">Not enough space. This needs about %1$s free and the TV has %2$s. Uninstall an app you don’t use, then try again.</string>
+    <string name="vt_clean">None of %1$d scanners flagged it</string>
+    <string name="vt_flagged">%1$d of %2$d scanners flagged it</string>
+    <string name="vt_title">VirusTotal report</string>
+    <string name="vt_body">VirusTotal checked %1$s on %2$s. %3$s. Scan the code with your phone to see the full report.</string>
+    <string name="vt_body_unscanned">Open Shelf hasn’t looked up %1$s on VirusTotal yet. Scan the code with your phone to check it there.</string>
+    <string name="upload_note">Sent from your phone</string>
+    <string name="prov_virustotal" translatable="false">VirusTotal</string>
 </resources>

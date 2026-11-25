@@ -25,8 +25,8 @@
       "certSha256": "aabbcc",
       "art": {"banner": "https://example.com/banner.png", "feature": null, "icon": "https://example.com/icon.png", "shots": ["https://example.com/1.png", "https://example.com/2.png"]},
       "apks": [
-        {"name": "player-arm64-v8a.apk", "abi": "arm64-v8a", "url": "https://example.com/a64.apk", "size": 1000},
-        {"name": "player-armeabi-v7a.apk", "abi": "armeabi-v7a", "url": "https://example.com/a32.apk", "size": 900},
+        {"name": "player-arm64-v8a.apk", "abi": "arm64-v8a", "url": "https://example.com/a64.apk", "size": 1000, "sha256": "5f3a", "vt": {"bad": 2, "of": 64, "on": "2026-11-30"}},
+        {"name": "player-armeabi-v7a.apk", "abi": "armeabi-v7a", "url": "https://example.com/a32.apk", "size": 900, "sha256": "9c01"},
         {"name": "player-x86_64.apk", "abi": "any", "url": "https://example.com/x64.apk", "size": 1100}
       ],
       "releases": [

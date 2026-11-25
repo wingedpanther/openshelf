@@ -3,6 +3,7 @@ package io.github.wingedpanther.openshelf
 import android.content.Context
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +13,8 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedInputStream
+import java.io.File
+import java.io.InputStream
 import java.io.OutputStream
 import java.net.Inet4Address
 import java.net.NetworkInterface
@@ -23,6 +26,7 @@ import kotlin.concurrent.thread
 
 object Companion {
     private const val FIRST_PORT = 8642
+    private const val MAX_UPLOAD = 2_000_000_000L
     private val main = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var server: ServerSocket? = null
     private var token = ""
@@ -30,6 +34,9 @@ object Companion {
     var url by mutableStateOf<String?>(null)
         private set
     val asked = mutableStateListOf<String>()
+    val uploads = mutableStateMapOf<String, App>()
+
+    fun byId(id: String): App? = Catalog.byId(id) ?: Direct.byId(id) ?: uploads[id]
 
     fun start(ctx: Context): String? {
         url?.let { return it }
@@ -72,8 +79,8 @@ object Companion {
         }
         val lines = head.lines()
         val (method, target) = lines.first().split(" ").let { (it.getOrNull(0) ?: "") to (it.getOrNull(1) ?: "/") }
-        val length = lines.firstOrNull { it.startsWith("Content-Length:", true) }?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
-        val body = if (length in 1..4096) String(ByteArray(length).also { var n = 0; while (n < length) { val r = input.read(it, n, length - n); if (r < 0) break; n += r } }) else ""
+        val length = lines.firstOrNull { it.startsWith("Content-Length:", true) }?.substringAfter(':')?.trim()?.toLongOrNull() ?: 0L
+        val body = if (method != "POST" || target.startsWith("/api/upload")) "" else if (length in 1..4096) String(ByteArray(length.toInt()).also { var n = 0; while (n < it.size) { val r = input.read(it, n, it.size - n); if (r < 0) break; n += r } }) else ""
         val path = target.substringBefore('?')
         val query = params(target.substringAfter('?', "")) + params(body)
         val out = client.getOutputStream()
@@ -83,6 +90,7 @@ object Companion {
             "/api/search" -> send(out, 200, "application/json", search(ctx, query["q"].orEmpty()).toString().toByteArray())
             "/api/install" -> send(out, 200, "application/json", install(ctx, query).toString().toByteArray())
             "/api/status" -> send(out, 200, "application/json", status(ctx).toString().toByteArray())
+            "/api/upload" -> send(out, 200, "application/json", upload(ctx, input, length).toString().toByteArray())
             else -> send(out, 404, "application/json", """{"error":"not found"}""".toByteArray())
         }
     }
@@ -152,5 +160,50 @@ object Companion {
     }
 
     private fun status(ctx: Context): JSONArray =
-        JSONArray(asked.distinct().mapNotNull { id -> (Catalog.byId(id) ?: Direct.byId(id))?.let { entry(ctx, it) } })
+        JSONArray(asked.distinct().mapNotNull { id -> byId(id)?.let { entry(ctx, it) } })
+
+    private fun upload(ctx: Context, input: InputStream, length: Long): JSONObject {
+        fun no(why: String) = JSONObject().put("ok", false).put("error", why)
+        if (length <= 0 || length > MAX_UPLOAD) return no("size")
+        if (Device.freeBytes(ctx) < spaceNeeded(length, 0)) return no("space")
+        val dir = Device.cacheDir(ctx).apply { mkdirs() }
+        val incoming = File(dir, "incoming-${System.nanoTime()}.apk")
+        var left = length
+        runCatching {
+            incoming.outputStream().use { out ->
+                val buf = ByteArray(64 * 1024)
+                while (left > 0) {
+                    val n = input.read(buf, 0, minOf(buf.size.toLong(), left).toInt())
+                    if (n < 0) break
+                    out.write(buf, 0, n)
+                    left -= n
+                }
+            }
+        }
+        if (left > 0) { incoming.delete(); return no("cut") }
+        val pm = ctx.packageManager
+        val info = runCatching { pm.getPackageArchiveInfo(incoming.path, 0) }.getOrNull()
+        if (info == null) { incoming.delete(); return no("apk") }
+        info.applicationInfo?.apply { sourceDir = incoming.path; publicSourceDir = incoming.path }
+        val label = info.applicationInfo?.let { runCatching { it.loadLabel(pm).toString() }.getOrNull() }?.takeIf { it.isNotBlank() } ?: info.packageName
+        val code = androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(info)
+        val app = uploaded(info.packageName, label, code, info.versionName, length)
+        val file = File(dir, "${app.id}-$code.apk")
+        file.delete()
+        if (!incoming.renameTo(file)) { incoming.delete(); return no("cut") }
+        main.launch {
+            uploads[app.id] = app
+            asked.add(app.id)
+            Installer.startFile(ctx, app, file)
+        }
+        return JSONObject().put("ok", true).put("name", label)
+    }
+
+    private fun uploaded(pkg: String, label: String, code: Long, versionName: String?, size: Long) = App(
+        id = "upload-$pkg", repo = "", name = label, pkg = pkg, versionCode = code, versionName = versionName, minSdk = null,
+        room = "Other", note = str(R.string.upload_note), desc = "", maker = "", stars = 0, licence = null, archived = false, streams = false,
+        version = versionName ?: code.toString(), date = java.time.LocalDate.now().toString(), certSha256 = null,
+        art = AppArt(null, null, null, emptyList()), apks = listOf(Apk("$pkg.apk", "any", "", size)), releases = emptyList(),
+        forkOf = null, parentStars = 0,
+    )
 }

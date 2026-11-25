@@ -311,4 +311,15 @@
     <string name="phone_body">同じWi-Fiのスマホでコードを読み取ってください。スマホで検索してインストールを押し、テレビで確認します。使っている間はこの画面を開いたままにしてください。</string>
     <string name="phone_offline">このテレビはホームネットワークにつながっていないため、スマホから接続できません。Wi-Fiか有線LANにつないで、もう一度試してください。</string>
     <string name="pack_held">保留中（鍵が異なる）</string>
+    <string name="job_speed">%1$s、残り約%2$s</string>
+    <string name="eta_seconds">%d秒</string>
+    <string name="eta_minutes">%d分</string>
+    <string name="eta_hours">%1$d時間%2$d分</string>
+    <string name="err_space">空き容量が足りません。約%1$s必要ですが、空きは%2$sです。使っていないアプリをアンインストールしてから、もう一度お試しください。</string>
+    <string name="vt_clean">%1$d個のスキャナーで検出なし</string>
+    <string name="vt_flagged">%2$d個中%1$d個のスキャナーが検出</string>
+    <string name="vt_title">VirusTotalのレポート</string>
+    <string name="vt_body">VirusTotalが%2$sに%1$sを確認しました。%3$s。スマートフォンでコードを読み取ると、レポート全体を表示できます。</string>
+    <string name="vt_body_unscanned">Open Shelfはまだ%1$sをVirusTotalで調べていません。スマートフォンでコードを読み取ると、VirusTotalで確認できます。</string>
+    <string name="upload_note">スマートフォンから送信</string>
 </resources>

@@ -342,4 +342,15 @@
     <string name="phone_body">امسح الرمز بهاتفك وهو على شبكة Wi-Fi نفسها. ابحث هناك واضغط تثبيت ثم أكّد على التلفاز. اترك هذه الشاشة مفتوحة أثناء الاستخدام.</string>
     <string name="phone_offline">هذا التلفاز ليس على شبكة منزلية، فلا يستطيع هاتفك الوصول إليه. صِله بشبكة Wi-Fi أو سلكية وحاول مرة أخرى.</string>
     <string name="pack_held">معلّق، مفتاح مختلف</string>
+    <string name="job_speed">%1$s، يتبقى نحو %2$s</string>
+    <string name="eta_seconds">%d ث</string>
+    <string name="eta_minutes">%d د</string>
+    <string name="eta_hours">%1$d س %2$d د</string>
+    <string name="err_space">لا توجد مساحة كافية. يحتاج هذا إلى نحو %1$s والمساحة الحرة في التلفاز %2$s. أزل تطبيقًا لا تستخدمه ثم حاول مرة أخرى.</string>
+    <string name="vt_clean">لم يُبلغ أي من %1$d ماسحًا عن مشكلة</string>
+    <string name="vt_flagged">أبلغ %1$d من %2$d ماسحًا عن مشكلة</string>
+    <string name="vt_title">تقرير VirusTotal</string>
+    <string name="vt_body">فحص VirusTotal الملف %1$s في %2$s. %3$s. امسح الرمز بهاتفك لرؤية التقرير الكامل.</string>
+    <string name="vt_body_unscanned">لم يبحث Open Shelf عن %1$s في VirusTotal بعد. امسح الرمز بهاتفك للتحقق منه هناك.</string>
+    <string name="upload_note">أُرسل من هاتفك</string>
 </resources>

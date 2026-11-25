@@ -30,7 +30,12 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-data class Apk(val name: String, val abi: String, val url: String, val size: Long)
+data class Scan(val flagged: Int, val engines: Int, val date: String)
+data class Apk(val name: String, val abi: String, val url: String, val size: Long, val sha256: String? = null, val scan: Scan? = null) {
+    val report: String? get() = sha256?.let { "https://www.virustotal.com/gui/file/$it" }
+}
+
+internal fun spaceNeeded(size: Long, downloaded: Long): Long = (size - downloaded).coerceAtLeast(0L) + size + 20_000_000L
 data class Release(val tag: String, val date: String)
 
 data class AppArt(val banner: String?, val feature: String?, val icon: String?, val shots: List<String>) {
@@ -126,7 +131,12 @@ object Catalog {
             version = o.getString("version"), date = o.getString("date"),
             certSha256 = o.str("certSha256"),
             art = AppArt(art.str("banner"), art.str("feature"), art.str("icon"), shots),
-            apks = o.getJSONArray("apks").objects().map { Apk(it.getString("name"), it.getString("abi").let { a -> if (a == "any") abiOf(it.getString("name")) else a }, it.getString("url"), it.getLong("size")) },
+            apks = o.getJSONArray("apks").objects().map {
+                Apk(
+                    it.getString("name"), it.getString("abi").let { a -> if (a == "any") abiOf(it.getString("name")) else a }, it.getString("url"), it.getLong("size"),
+                    it.str("sha256"), it.optJSONObject("vt")?.let { v -> Scan(v.getInt("bad"), v.getInt("of"), v.getString("on")) },
+                )
+            },
             releases = o.getJSONArray("releases").objects().map { Release(it.getString("tag"), it.getString("date")) },
             forkOf = o.str("forkOf"), parentStars = o.optInt("parentStars"), added = o.str("added"), basedOn = o.str("basedOn"),
             pushed = o.str("pushed"), downloads = o.optInt("downloads"),
@@ -514,6 +524,16 @@ object Fmt {
     fun monthYear(d: String) = fmt(R.string.fmt_month_year, d)
     fun mb(bytes: Long): String = L.wrap(String.format(Locale.getDefault(), "%.1f MB", bytes / 1_000_000.0))
     fun gb(bytes: Long): String = L.wrap(String.format(Locale.getDefault(), "%.1f GB", bytes / 1_000_000_000.0))
+    fun size(bytes: Long): String = if (bytes >= 1_000_000_000) gb(bytes) else mb(bytes)
+    fun speed(perSecond: Long): String = L.wrap(
+        if (perSecond >= 1_000_000) String.format(Locale.getDefault(), "%.1f MB/s", perSecond / 1_000_000.0)
+        else String.format(Locale.getDefault(), "%d KB/s", maxOf(perSecond / 1000, 1))
+    )
+    fun eta(seconds: Long): String = when {
+        seconds < 60 -> str(R.string.eta_seconds, maxOf(seconds, 1L))
+        seconds < 3600 -> str(R.string.eta_minutes, (seconds + 30) / 60)
+        else -> str(R.string.eta_hours, seconds / 3600, seconds % 3600 / 60)
+    }
     fun count(n: Int): String = NumberFormat.getIntegerInstance(Locale.getDefault()).format(n)
     fun downloads(n: Int): String = "↓ " + if (n >= 1_000_000) String.format(Locale.getDefault(), "%.1fM", n / 1_000_000.0).replace(Regex("[.,]0M$"), "M") else stars(n)
     fun stars(n: Int): String = if (n >= 1000) String.format(Locale.getDefault(), "%.1fk", n / 1000.0).replace(Regex("[.,]0k$"), "k") else "$n"

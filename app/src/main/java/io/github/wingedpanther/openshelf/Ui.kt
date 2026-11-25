@@ -350,6 +350,7 @@ fun InstallButton(app: App, modifier: Modifier = Modifier, solid: Boolean = true
 fun JobNote(app: App, modifier: Modifier = Modifier, helpButton: Boolean = true) {
     var help by remember { mutableStateOf(false) }
     when (val job = Installer.jobs[app.id]) {
+        is Job.Downloading -> job.secondsLeft?.let { T(str(R.string.job_speed, Fmt.speed(job.speed), Fmt.eta(it)), 12.5.sp, modifier, color = C.Stone, maxLines = 1) }
         is Job.Failed -> androidx.compose.foundation.layout.Column(modifier) {
             T(job.message, 12.5.sp, color = C.Ink2, maxLines = 4)
             if (helpButton && Help.applies(job.message)) {

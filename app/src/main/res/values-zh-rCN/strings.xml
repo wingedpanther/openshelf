@@ -311,4 +311,15 @@
     <string name="phone_body">用连着同一 Wi-Fi 的手机扫描二维码。在手机上搜索并按安装，然后在电视上确认。使用期间请保持此画面打开。</string>
     <string name="phone_offline">这台电视没有连接家庭网络，手机无法连上。请把电视连上 Wi-Fi 或网线后再试。</string>
     <string name="pack_held">已暂停，密钥不同</string>
+    <string name="job_speed">%1$s，还剩约 %2$s</string>
+    <string name="eta_seconds">%d 秒</string>
+    <string name="eta_minutes">%d 分钟</string>
+    <string name="eta_hours">%1$d 小时 %2$d 分钟</string>
+    <string name="err_space">空间不足。需要约 %1$s 可用空间，电视只有 %2$s。请卸载不用的应用后重试。</string>
+    <string name="vt_clean">%1$d 个扫描引擎均未报毒</string>
+    <string name="vt_flagged">%2$d 个扫描引擎中有 %1$d 个报毒</string>
+    <string name="vt_title">VirusTotal 报告</string>
+    <string name="vt_body">VirusTotal 于 %2$s 检查了 %1$s。%3$s。用手机扫描二维码查看完整报告。</string>
+    <string name="vt_body_unscanned">Open Shelf 还没有在 VirusTotal 上查询 %1$s。用手机扫描二维码即可在那里检查。</string>
+    <string name="upload_note">从手机发送</string>
 </resources>

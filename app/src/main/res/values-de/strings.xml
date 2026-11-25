@@ -318,4 +318,15 @@
     <string name="phone_body">Scanne den Code mit dem Handy im selben WLAN. Such dort, drück Installieren und bestätige am Fernseher. Lass diese Anzeige offen, solange du es benutzt.</string>
     <string name="phone_offline">Dieser Fernseher ist in keinem Heimnetz, das Handy erreicht ihn nicht. Verbinde ihn mit WLAN oder LAN und versuche es noch einmal.</string>
     <string name="pack_held">Zurückgehalten, anderer Schlüssel</string>
+    <string name="job_speed">%1$s, noch etwa %2$s</string>
+    <string name="eta_seconds">%d s</string>
+    <string name="eta_minutes">%d min</string>
+    <string name="eta_hours">%1$d h %2$d min</string>
+    <string name="err_space">Nicht genug Speicher. Nötig sind etwa %1$s, frei sind %2$s. Deinstalliere eine App, die du nicht nutzt, und versuche es noch einmal.</string>
+    <string name="vt_clean">Keiner von %1$d Scannern schlägt an</string>
+    <string name="vt_flagged">%1$d von %2$d Scannern schlagen an</string>
+    <string name="vt_title">VirusTotal-Bericht</string>
+    <string name="vt_body">VirusTotal hat %1$s am %2$s geprüft. %3$s. Scanne den Code mit dem Handy, um den ganzen Bericht zu sehen.</string>
+    <string name="vt_body_unscanned">Open Shelf hat %1$s noch nicht bei VirusTotal nachgeschlagen. Scanne den Code mit dem Handy, um es dort zu prüfen.</string>
+    <string name="upload_note">Vom Handy gesendet</string>
 </resources>

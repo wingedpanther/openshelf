@@ -40,6 +40,9 @@ h2 { font-size: 15px; color: var(--stone); font-weight: 600; margin: 26px 0 4px;
   <h2>Not in the list?</h2>
   <div class="gh"><input id="repo" placeholder="github.com/owner/repo" autocapitalize="off" autocorrect="off"><button id="go">Install</button></div>
   <div class="note" id="ghnote">Open Shelf takes the newest APK from that repository’s releases. It can’t check that the app is made for TV.</div>
+  <h2>Send an APK from this phone</h2>
+  <div class="gh"><input id="file" type="file" accept=".apk,application/vnd.android.package-archive"><button id="send">Send</button></div>
+  <div class="note" id="filenote">Pick an .apk file and your TV installs it. Android asks you to confirm on the TV first. Split bundles (.apks, .xapk) won’t work.</div>
 </main>
 <script>
 const token = new URLSearchParams(location.search).get("t") || "";
@@ -98,6 +101,28 @@ $("go").addEventListener("click", async () => {
   const r = await api("/api/install", { repo }).catch(fail);
   $("ghnote").textContent = r && r.ok ? "Sent. Your TV is looking up " + repo + "." : "That doesn’t look like a GitHub repository.";
   setTimeout(status, 2500);
+});
+const refused = {
+  space: "Your TV doesn’t have enough free space for this file.",
+  apk: "Android can’t read that file. It needs to be a single .apk, not a split bundle.",
+  size: "That file is too big to send.",
+  cut: "The upload stopped partway. Try again.",
+};
+$("send").addEventListener("click", () => {
+  const f = $("file").files[0]; if (!f) return;
+  const x = new XMLHttpRequest();
+  x.open("POST", "/api/upload?t=" + encodeURIComponent(token));
+  x.upload.onprogress = (e) => { if (e.lengthComputable) $("filenote").textContent = "Sending " + Math.round(e.loaded / e.total * 100) + "%"; };
+  x.onload = () => {
+    if (x.status === 403) return fail(new Error("token"));
+    let r = {}; try { r = JSON.parse(x.responseText); } catch (e) {}
+    $("send").disabled = false;
+    $("filenote").textContent = r.ok ? "Sent " + r.name + ". Confirm the install on your TV." : refused[r.error] || "That didn’t work. Try again.";
+    status();
+  };
+  x.onerror = () => fail(new Error("network"));
+  $("send").disabled = true;
+  x.send(f);
 });
 const poll = setInterval(status, 2000);
 search(); status();

@@ -62,9 +62,20 @@ class CatalogParseTest {
                 Apk("player-armeabi-v7a.apk", "armeabi-v7a", "https://example.com/a32.apk", 900),
                 Apk("player-x86_64.apk", "x86_64", "https://example.com/x64.apk", 1100),
             ),
-            full.apks,
+            full.apks.map { it.copy(sha256 = null, scan = null) },
         )
         assertEquals(listOf(Apk("launcher-universal.apk", "universal", "https://example.com/l.apk", 500)), sparse.apks)
+    }
+
+    @Test fun apkDigestAndScan() {
+        val (a64, a32, x64) = full.apks
+        assertEquals("5f3a", a64.sha256)
+        assertEquals(Scan(2, 64, "2026-11-30"), a64.scan)
+        assertEquals("https://www.virustotal.com/gui/file/5f3a", a64.report)
+        assertEquals("9c01", a32.sha256)
+        assertNull(a32.scan)
+        assertNull(x64.sha256)
+        assertNull(x64.report)
     }
 
     @Test fun releases() {

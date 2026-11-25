@@ -828,6 +828,7 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
     var showNotes by remember(app.id) { mutableStateOf(false) }
     var showPermissions by remember(app.id) { mutableStateOf(false) }
     var showHelp by remember { mutableStateOf(false) }
+    var showScan by remember(app.id) { mutableStateOf(false) }
     val permissions = remember(app.id, installed) {
         if (installed != null) Device.permissions(ctx, app.pkg) else app.perms
     }
@@ -930,6 +931,12 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
                 Prov(if (mismatch || other != null) Icons.ShieldAlert else Icons.Shield, str(R.string.prov_signing), sig)
                 val picked = if (apk.abi in listOf("any", "universal")) str(R.string.file_picked_any) else str(R.string.file_picked_abi, abiLabel(apk.abi))
                 Prov(Icons.Chip, picked, apk.name)
+                apk.scan?.let { s ->
+                    Prov(
+                        if (s.flagged > 0) Icons.ShieldAlert else Icons.Shield, str(R.string.prov_virustotal),
+                        if (s.flagged > 0) str(R.string.vt_flagged, s.flagged, s.engines) else str(R.string.vt_clean, s.engines),
+                    )
+                }
             }
             FlowRow(
                 Modifier.padding(top = 14.dp).offset(x = (-4).dp),
@@ -944,6 +951,7 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
                 if (browser) Pill("GitHub", { openRepo(ctx, app.repo) }, icon = Icons.Link)
                 if (notes != null) Pill(str(R.string.whats_new_short), { showNotes = true })
                 if (permissions.isNotEmpty()) Pill(str(R.string.permissions_action), { showPermissions = true })
+                if (apk.report != null) Pill(str(R.string.prov_virustotal), { showScan = true }, icon = Icons.Shield)
             }
         }
     }
@@ -951,6 +959,33 @@ private fun AppPage(app: App, openApp: (String) -> Unit, handoff: FocusHandoff) 
     notes?.takeIf { showNotes }?.let { InfoDialog(str(R.string.whats_new, app.version), it) { showNotes = false } }
     if (showPermissions) PermissionsDialog(knownPermissions, permissions.size - knownPermissions.size) { showPermissions = false }
     if (showHelp) HelpDialog { showHelp = false }
+    if (showScan) ScanDialog(apk) { showScan = false }
+}
+
+@Composable
+private fun ScanDialog(apk: Apk, onClose: () -> Unit) {
+    val closeRequester = remember { FocusRequester() }
+    val report = apk.report ?: return
+    Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
+        Row(
+            Modifier.width(680.dp).shadow(16.dp, RoundedCornerShape(18.dp))
+                .background(C.Mat, RoundedCornerShape(18.dp)).padding(28.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                T(str(R.string.vt_title), 22.sp, weight = FontWeight.SemiBold, tight = true)
+                val s = apk.scan
+                val body = if (s == null) str(R.string.vt_body_unscanned, apk.name)
+                    else str(R.string.vt_body, apk.name, Fmt.date(s.date), if (s.flagged > 0) str(R.string.vt_flagged, s.flagged, s.engines) else str(R.string.vt_clean, s.engines))
+                T(body, 14.sp, Modifier.padding(top = 12.dp), color = C.Ink2)
+                Row(Modifier.padding(top = 22.dp)) {
+                    Pill(str(R.string.action_close), onClose, solid = true, requester = closeRequester)
+                }
+            }
+            Spacer(Modifier.width(24.dp))
+            Qr(report, 200.dp)
+            LaunchedEffect(Unit) { runCatching { closeRequester.requestFocus() } }
+        }
+    }
 }
 
 @Composable
@@ -1082,7 +1117,7 @@ private fun StorageLine(app: App, installed: Installed?) {
         if (installed != null) {
             T(str(R.string.installed_version, installed.versionName ?: "?"), 11.5.sp, color = C.Stone, maxLines = 1)
         } else {
-            T(str(R.string.needs_space, Fmt.mb(need), Fmt.gb(free)), 11.5.sp, color = C.Stone, maxLines = 1)
+            T(str(R.string.needs_space, Fmt.mb(need), Fmt.size(free)), 11.5.sp, color = C.Stone, maxLines = 1)
             Row(Modifier.padding(top = 5.dp).fillMaxWidth().height(4.dp).clip(CircleShape).background(C.WallDeep)) {
                 val used = if (total > 0) (total - free).toFloat() / total else 0f
                 Box(Modifier.fillMaxHeight().weight(used.coerceIn(0.01f, 0.98f)).background(C.Stone2))
@@ -1739,7 +1774,7 @@ private fun PhoneDialog(onClose: () -> Unit) {
                 T(str(R.string.phone_title), 22.sp, weight = FontWeight.SemiBold, tight = true)
                 T(str(if (url != null) R.string.phone_body else R.string.phone_offline), 14.5.sp, Modifier.padding(top = 8.dp), color = C.Ink2)
                 if (url != null) T(url.substringBefore("?"), 16.sp, Modifier.padding(top = 12.dp), weight = FontWeight.SemiBold)
-                val asked = Companion.asked.distinct().mapNotNull { Catalog.byId(it) ?: Direct.byId(it) }.takeLast(4)
+                val asked = Companion.asked.distinct().mapNotNull { Companion.byId(it) }.takeLast(4)
                 if (asked.isNotEmpty()) {
                     Column(Modifier.padding(top = 14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         asked.forEach { a ->

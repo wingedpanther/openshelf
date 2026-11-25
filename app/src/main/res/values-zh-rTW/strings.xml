@@ -311,4 +311,15 @@
     <string name="phone_body">用連著同一個 Wi-Fi 的手機掃描 QR 碼。在手機上搜尋並按安裝，然後在電視上確認。使用期間請保持此畫面開啟。</string>
     <string name="phone_offline">這台電視沒有連上家用網路，手機無法連線。請把電視連上 Wi-Fi 或網路線後再試。</string>
     <string name="pack_held">已暫停，金鑰不同</string>
+    <string name="job_speed">%1$s，還剩約 %2$s</string>
+    <string name="eta_seconds">%d 秒</string>
+    <string name="eta_minutes">%d 分鐘</string>
+    <string name="eta_hours">%1$d 小時 %2$d 分鐘</string>
+    <string name="err_space">空間不足。需要約 %1$s 可用空間，電視只有 %2$s。請解除安裝不用的應用程式後再試一次。</string>
+    <string name="vt_clean">%1$d 個掃描引擎皆未偵測到問題</string>
+    <string name="vt_flagged">%2$d 個掃描引擎中有 %1$d 個偵測到問題</string>
+    <string name="vt_title">VirusTotal 報告</string>
+    <string name="vt_body">VirusTotal 於 %2$s 檢查了 %1$s。%3$s。用手機掃描 QR 碼查看完整報告。</string>
+    <string name="vt_body_unscanned">Open Shelf 尚未在 VirusTotal 上查詢 %1$s。用手機掃描 QR 碼即可在那裡檢查。</string>
+    <string name="upload_note">從手機傳送</string>
 </resources>
