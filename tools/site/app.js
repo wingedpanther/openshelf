@@ -1,5 +1,6 @@
 const PAGE = 60;
-const state = { all: [], apps: [], room: "", q: "", shown: PAGE };
+const NEW = "@new";
+const state = { all: [], apps: [], room: "", q: "", shown: PAGE, fresh: new Set() };
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const num = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1000 ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k" : String(n);
@@ -21,6 +22,7 @@ function list() {
   const q = state.q.trim().toLowerCase();
   if (/^\d{5}$/.test(q)) return state.all.filter((a) => String(a.code) === q);
   const words = q.split(/\s+/).filter(Boolean);
+  if (state.room === NEW) return state.apps.filter((a) => state.fresh.has(a.repo) && (!words.length || matches(a, words)));
   return state.apps.filter((a) => (!state.room || a.room === state.room) && (words.length ? matches(a, words) : a.stars >= 10));
 }
 
@@ -40,7 +42,8 @@ function rooms() {
   const counts = {};
   state.apps.forEach((a) => { if (a.stars >= 10) counts[a.room] = (counts[a.room] || 0) + 1; });
   const names = Object.keys(counts).sort((x, y) => (x === "Other") - (y === "Other") || counts[y] - counts[x]);
-  $("rooms").innerHTML = [["", "All"], ...names.map((n) => [n, n])]
+  const fresh = state.fresh.size ? [[NEW, `New this week (${state.fresh.size})`]] : [];
+  $("rooms").innerHTML = [["", "All"], ...fresh, ...names.map((n) => [n, n])]
     .map(([v, t]) => `<button class="chip" data-room="${esc(v)}" aria-pressed="${v === state.room}">${esc(t)}</button>`).join("");
 }
 
@@ -101,7 +104,11 @@ $("q").addEventListener("input", (e) => { state.q = e.target.value; state.shown 
 $("more").addEventListener("click", () => { state.shown += PAGE; render(); });
 window.addEventListener("hashchange", route);
 
-fetch("catalog.json").then((r) => r.json()).then((c) => {
+const weeks = fetch("new.json").then((r) => r.json()).catch(() => ({}));
+
+fetch("catalog.json").then((r) => r.json()).then(async (c) => {
+  const w = (await weeks).weeks?.[0];
+  if (w?.date === c.generated) state.fresh = new Set(w.repos);
   state.all = c.apps.filter((a) => a.apks?.length);
   state.apps = state.all.filter((a) => !a.forkOf);
   $("foot").textContent = `${c.apps.length.toLocaleString()} apps, checked ${date(c.generated)}. App names, art and releases come from each project’s GitHub repository. Open Shelf is open source under GPL-3.0.`;

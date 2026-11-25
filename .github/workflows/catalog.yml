@@ -31,7 +31,8 @@ jobs:
         run: |
           mkdir -p work
           cp app/src/main/assets/catalog.json work/seed.json
-          curl -fsSL https://wingedpanther.github.io/openshelf/catalog.json -o published.json && mv published.json app/src/main/assets/catalog.json || true
+          curl -fsSL https://wingedpanther.github.io/openshelf/catalog.json -o previous.json && cp previous.json app/src/main/assets/catalog.json || true
+          curl -fsSL https://wingedpanther.github.io/openshelf/new.json -o new-before.json || true
           rm -f work/discover.json work/enrich.json work/forks.json
 
       - name: Crawl GitHub
@@ -39,6 +40,13 @@ jobs:
           GH_TOKEN: ${{ secrets.CRAWL_TOKEN }}
         timeout-minutes: 330
         run: python3 -I tools/crawl.py work discover enrich forks inspect art build
+
+      - name: Look up APKs on VirusTotal
+        env:
+          VT_KEY: ${{ secrets.VT_KEY }}
+        timeout-minutes: 90
+        continue-on-error: true
+        run: python3 -I tools/scan.py app/src/main/assets/catalog.json work previous.json
 
       - name: Keep crawl progress
         if: always()
@@ -53,7 +61,7 @@ jobs:
         run: |
           umask 077
           printf '%s\n' "$CATALOG_KEY" > "$RUNNER_TEMP/key.pem"
-          CATALOG_KEY_FILE="$RUNNER_TEMP/key.pem" python3 -I tools/publish.py app/src/main/assets/catalog.json site
+          CATALOG_KEY_FILE="$RUNNER_TEMP/key.pem" python3 -I tools/publish.py app/src/main/assets/catalog.json site --before previous.json work/seed.json --history new-before.json
           rm "$RUNNER_TEMP/key.pem"
 
       - uses: actions/upload-pages-artifact@v3
