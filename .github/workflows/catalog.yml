@@ -18,6 +18,8 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
     timeout-minutes: 355
+    outputs:
+      news: ${{ steps.news.outputs.text }}
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +66,10 @@ jobs:
           CATALOG_KEY_FILE="$RUNNER_TEMP/key.pem" python3 -I tools/publish.py app/src/main/assets/catalog.json site --before previous.json work/seed.json --history new-before.json
           rm "$RUNNER_TEMP/key.pem"
 
+      - name: Write the Discord message
+        id: news
+        run: echo "text=$(python3 -I tools/announce.py site)" >> "$GITHUB_OUTPUT"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
@@ -77,3 +83,16 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  announce:
+    needs: [crawl, deploy]
+    if: needs.crawl.outputs.news != ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post the new apps to Discord
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TEXT: ${{ needs.crawl.outputs.news }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then echo "No DISCORD_WEBHOOK secret, nothing posted"; exit 0; fi
+          jq -n --arg c "$TEXT" '{content: $c, allowed_mentions: {parse: []}}' | curl -fsS -H 'Content-Type: application/json' -d @- "$WEBHOOK"
