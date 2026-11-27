@@ -79,6 +79,15 @@
     <string name="row_tv_sub">apps que incluyen imágenes para TV</string>
     <string name="row_new">Novedades en Open Shelf</string>
     <string name="row_new_sub">añadidas en los últimos dos meses</string>
+    <string name="news_one">1 app nueva: %1$s.</string>
+    <plurals name="news_many">
+        <item quantity="one">%1$d app nueva, entre ellas %2$s.</item>
+        <item quantity="other">%1$d apps nuevas, entre ellas %2$s.</item>
+    </plurals>
+    <string name="news_and">%1$s y %2$s</string>
+    <string name="news_see">Ver apps nuevas</string>
+    <string name="news_title">Apps nuevas</string>
+    <string name="news_body">Añadidas desde la última actualización de la lista.</string>
     <string name="row_recent">Actualizadas recientemente</string>
     <string name="row_recent_sub">nuevas versiones en GitHub</string>
     <string name="row_starred">Con más estrellas</string>

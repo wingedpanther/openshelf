@@ -79,6 +79,15 @@
     <string name="row_tv_sub">apps that ship TV artwork</string>
     <string name="row_new">New in Open Shelf</string>
     <string name="row_new_sub">added in the last two months</string>
+    <string name="news_one">1 new app added: %1$s.</string>
+    <plurals name="news_many">
+        <item quantity="one">%1$d new app added, including %2$s.</item>
+        <item quantity="other">%1$d new apps added, including %2$s.</item>
+    </plurals>
+    <string name="news_and">%1$s and %2$s</string>
+    <string name="news_see">See new apps</string>
+    <string name="news_title">New apps</string>
+    <string name="news_body">Added since Open Shelf last updated its list.</string>
     <string name="row_recent">Recently updated</string>
     <string name="row_recent_sub">new releases on GitHub</string>
     <string name="row_starred">Most starred</string>

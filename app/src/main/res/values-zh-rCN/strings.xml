@@ -79,6 +79,14 @@
     <string name="row_tv_sub">提供电视版配图的应用</string>
     <string name="row_new">Open Shelf 新增</string>
     <string name="row_new_sub">最近两个月内加入</string>
+    <string name="news_one">新增 1 个应用：%1$s。</string>
+    <plurals name="news_many">
+        <item quantity="other">新增 %1$d 个应用，包括 %2$s。</item>
+    </plurals>
+    <string name="news_and">%1$s 和 %2$s</string>
+    <string name="news_see">查看新应用</string>
+    <string name="news_title">新应用</string>
+    <string name="news_body">自上次更新列表以来新增的应用。</string>
     <string name="row_recent">最近更新</string>
     <string name="row_recent_sub">GitHub 上的新版本</string>
     <string name="row_starred">最多星标</string>

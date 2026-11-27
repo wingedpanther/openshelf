@@ -146,6 +146,7 @@ fun OpenShelf() {
     var tabsFocused by remember { mutableStateOf(false) }
     val tabRequesters = remember { Tab.entries.associateWith { FocusRequester() } }
     val handoff = remember { FocusHandoff() }
+    var newsList by remember { mutableStateOf<List<App>?>(null) }
     val ctx = LocalContext.current
     LaunchedEffect(Device.tick) {
         Catalog.load(ctx)
@@ -219,6 +220,17 @@ fun OpenShelf() {
             onTabsFocus = { tabsFocused = it },
             updates = updates,
         )
+        val news = CatalogUpdate.news
+        if (news.isNotEmpty()) {
+            NewsNotice(news, Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp), { newsList = news.take(NEWS_LISTED) }) { hadFocus ->
+                CatalogUpdate.news = emptyList()
+                if (hadFocus) handoff.pending = true
+            }
+        }
+    }
+
+    newsList?.let { list ->
+        AppListDialog(str(R.string.news_title), str(R.string.news_body), list, openApp, { newsList = null; handoff.pending = true }, bulk = false)
     }
 
     val selfApp = SelfUpdate.app
@@ -242,6 +254,38 @@ fun OpenShelf() {
             runCatching { handoff.target.requestFocus() }
             handoff.pending = false
         }
+    }
+}
+
+private const val NEWS_SHOWN = 10_000L
+private const val NEWS_LISTED = 60
+
+private fun newsText(news: List<App>): String =
+    if (news.size == 1) str(R.string.news_one, news[0].name)
+    else plural(R.plurals.news_many, news.size, news.size, str(R.string.news_and, news[0].name, news[1].name))
+
+@Composable
+private fun NewsNotice(news: List<App>, modifier: Modifier, onOpen: () -> Unit, onDone: (Boolean) -> Unit) {
+    val button = remember { FocusRequester() }
+    var focused by remember { mutableStateOf(false) }
+    LaunchedEffect(news) {
+        delay(60)
+        runCatching { button.requestFocus() }
+        delay(NEWS_SHOWN)
+        onDone(focused)
+    }
+    Row(
+        modifier.widthIn(max = 760.dp).shadow(16.dp, RoundedCornerShape(18.dp))
+            .background(C.Mat, RoundedCornerShape(18.dp))
+            .onFocusChanged { focused = it.hasFocus }
+            .padding(start = 22.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(painterResource(C.mark), null, Modifier.size(22.dp))
+        Spacer(Modifier.width(12.dp))
+        T(newsText(news), 14.5.sp, Modifier.weight(1f, fill = false), maxLines = 2)
+        Spacer(Modifier.width(14.dp))
+        Pill(str(R.string.news_see), onOpen, solid = true, requester = button)
     }
 }
 
@@ -472,7 +516,7 @@ private fun PackDialog(pack: Pack, openApp: (String) -> Unit, onClose: () -> Uni
 }
 
 @Composable
-fun AppListDialog(title: String, body: String, apps: List<App>, openApp: (String) -> Unit, onClose: () -> Unit) {
+fun AppListDialog(title: String, body: String, apps: List<App>, openApp: (String) -> Unit, onClose: () -> Unit, bulk: Boolean = true) {
     val ctx = LocalContext.current
     val tick = Device.tick
     val first = remember { FocusRequester() }
@@ -510,9 +554,10 @@ fun AppListDialog(title: String, body: String, apps: List<App>, openApp: (String
                     }
                 }
             }
+            val install = bulk && missing.isNotEmpty()
             Row(Modifier.padding(top = 18.dp).fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                Pill(str(R.string.action_close), onClose)
-                if (missing.isNotEmpty()) {
+                Pill(str(R.string.action_close), onClose, requester = if (install) null else first)
+                if (install) {
                     Spacer(Modifier.width(10.dp))
                     Pill(str(R.string.pack_install, missing.size, Fmt.mb(size)), { missing.forEach { Installer.start(ctx, it) } },
                         solid = true, icon = Icons.Download, requester = first)

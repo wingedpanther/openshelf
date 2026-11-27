@@ -79,6 +79,19 @@
     <string name="row_tv_sub">تتضمّن صوراً مخصّصة للتلفزيون</string>
     <string name="row_new">جديد في Open Shelf</string>
     <string name="row_new_sub">أُضيفت خلال آخر شهرين</string>
+    <string name="news_one">تطبيق جديد: %1$s.</string>
+    <plurals name="news_many">
+        <item quantity="zero">%1$d تطبيق جديد، منها %2$s.</item>
+        <item quantity="one">تطبيق جديد: %2$s.</item>
+        <item quantity="two">تطبيقان جديدان: %2$s.</item>
+        <item quantity="few">%1$d تطبيقات جديدة، منها %2$s.</item>
+        <item quantity="many">%1$d تطبيقًا جديدًا، منها %2$s.</item>
+        <item quantity="other">%1$d تطبيق جديد، منها %2$s.</item>
+    </plurals>
+    <string name="news_and">%1$s و%2$s</string>
+    <string name="news_see">عرض التطبيقات الجديدة</string>
+    <string name="news_title">تطبيقات جديدة</string>
+    <string name="news_body">أُضيفت منذ آخر تحديث للقائمة.</string>
     <string name="row_recent">محدّثة مؤخراً</string>
     <string name="row_recent_sub">أحدث الإصدارات على GitHub</string>
     <string name="row_starred">الأكثر حصولاً على النجوم</string>

@@ -188,6 +188,8 @@ object CatalogUpdate {
     private const val KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAED2a7uym6JtB/aT5HoGy5eJWUiPD3LQ3oSgpJ9qLm/oLzZk5FqD741D1Lu8CW1F2gote9xH6iPxylektADgB75w=="
     private const val EVERY = 12 * 60 * 60 * 1000L
 
+    var news by mutableStateOf<List<App>>(emptyList())
+
     fun file(ctx: Context) = File(ctx.filesDir, "catalog.json")
 
     suspend fun check(ctx: Context) {
@@ -208,8 +210,14 @@ object CatalogUpdate {
             }.getOrNull()
         } ?: return
         prefs.edit().putLong("at", now).apply()
-        if (fresh) Catalog.reload(ctx)
+        if (!fresh) return
+        val known = Catalog.apps.mapTo(HashSet()) { it.repo.lowercase() }
+        Catalog.reload(ctx)
+        if (known.isNotEmpty()) news = added(known, Catalog.visible)
     }
+
+    internal fun added(known: Set<String>, apps: List<App>) =
+        apps.filter { it.forkOf == null && it.repo.lowercase() !in known }.sortedByDescending { it.stars }
 
     fun verify(data: ByteArray, sig: ByteArray): Boolean = runCatching {
         val key = java.security.KeyFactory.getInstance("EC")

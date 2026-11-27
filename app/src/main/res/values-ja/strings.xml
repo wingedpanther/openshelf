@@ -79,6 +79,14 @@
     <string name="row_tv_sub">テレビ用アートワークを備えたアプリ</string>
     <string name="row_new">Open Shelfの新着</string>
     <string name="row_new_sub">過去2か月間に追加</string>
+    <string name="news_one">新しいアプリが1件追加されました：%1$s</string>
+    <plurals name="news_many">
+        <item quantity="other">%1$d件の新しいアプリが追加されました（%2$sなど）</item>
+    </plurals>
+    <string name="news_and">%1$s、%2$s</string>
+    <string name="news_see">新しいアプリを見る</string>
+    <string name="news_title">新しいアプリ</string>
+    <string name="news_body">前回のリスト更新以降に追加されたアプリです。</string>
     <string name="row_recent">最近更新</string>
     <string name="row_recent_sub">GitHubの新しいリリース</string>
     <string name="row_starred">スター数順</string>
