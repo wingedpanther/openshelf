@@ -91,6 +91,7 @@ object Companion {
             "/api/install" -> send(out, 200, "application/json", install(ctx, query).toString().toByteArray())
             "/api/status" -> send(out, 200, "application/json", status(ctx).toString().toByteArray())
             "/api/upload" -> send(out, 200, "application/json", upload(ctx, input, length).toString().toByteArray())
+            "/api/github" -> send(out, 200, "application/json", github(query["token"]).toString().toByteArray())
             else -> send(out, 404, "application/json", """{"error":"not found"}""".toByteArray())
         }
     }
@@ -122,6 +123,34 @@ object Companion {
         return JSONObject().put("id", a.id).put("code", a.code ?: JSONObject.NULL).put("name", a.name).put("note", a.note)
             .put("icon", a.art.icon ?: JSONObject.NULL).put("stars", a.stars).put("state", state)
             .put("size", pickApk(a).size)
+    }
+
+    private fun github(token: String?): JSONObject {
+        if (token == null) return JSONObject().put("saved", Prefs.githubToken.isNotEmpty())
+        val t = token.trim()
+        if (t.isEmpty()) {
+            main.launch { Prefs.saveGithubToken("") }
+            return JSONObject().put("ok", true).put("saved", false)
+        }
+        val limit = runCatching {
+            val conn = java.net.URL("${GitHub.API}rate_limit").openConnection() as java.net.HttpURLConnection
+            try {
+                conn.connectTimeout = 15_000
+                conn.readTimeout = 15_000
+                conn.setRequestProperty("Accept", "application/vnd.github+json")
+                conn.setRequestProperty("Authorization", "Bearer $t")
+                if (conn.responseCode == 401) 0 else JSONObject(conn.inputStream.bufferedReader().use { it.readText() })
+                    .getJSONObject("resources").getJSONObject("core").getInt("limit")
+            } finally {
+                conn.disconnect()
+            }
+        }.getOrElse { return JSONObject().put("error", "net") }
+        if (limit <= 60) return JSONObject().put("error", "bad")
+        main.launch {
+            Prefs.saveGithubToken(t)
+            GitHub.limitedUntil = 0L
+        }
+        return JSONObject().put("ok", true).put("saved", true).put("limit", limit)
     }
 
     private fun search(ctx: Context, q: String): JSONArray {

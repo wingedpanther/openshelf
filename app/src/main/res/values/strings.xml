@@ -324,6 +324,11 @@
     <string name="set_phone">Phone companion</string>
     <string name="phone_value">Open</string>
     <string name="phone_help">Search and pick apps on your phone, and the TV installs them. Your phone needs to be on the same Wi-Fi.</string>
+    <string name="set_github">GitHub token</string>
+    <string name="github_on">Added</string>
+    <string name="github_off">Not added</string>
+    <string name="set_github_help">Without a token, GitHub allows 60 lookups an hour for release notes, older versions and owner/repo installs. With one it allows 5,000. Press OK to add one from your phone, or to remove the one you added.</string>
+    <string name="github_limit">GitHub’s limit for this connection is used up until %1$s. Release notes and owner/repo installs wait until then. A GitHub token in Settings raises the limit.</string>
     <string name="phone_title">Use your phone</string>
     <string name="phone_body">Scan the code with your phone on the same Wi-Fi. Search there, press Install, then confirm on the TV. Keep this screen open while you use it.</string>
     <string name="phone_offline">This TV isn’t on a home network, so your phone can’t reach it. Connect the TV to Wi-Fi or Ethernet and try again.</string>

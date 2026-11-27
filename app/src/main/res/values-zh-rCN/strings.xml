@@ -315,6 +315,11 @@
     <string name="set_phone">手机助手</string>
     <string name="phone_value">打开</string>
     <string name="phone_help">在手机上搜索并选择应用，电视会帮你安装。手机需连接同一个 Wi-Fi。</string>
+    <string name="set_github">GitHub 令牌</string>
+    <string name="github_on">已添加</string>
+    <string name="github_off">未添加</string>
+    <string name="set_github_help">没有令牌时，GitHub 每小时只允许 60 次查询，用于版本说明、旧版本和 owner/repo 安装。有令牌时为 5000 次。按 OK 可从手机添加令牌，或移除已添加的令牌。</string>
+    <string name="github_limit">此网络的 GitHub 限额已用完，%1$s 恢复。版本说明和 owner/repo 安装会等到那时。在设置中添加 GitHub 令牌可以提高限额。</string>
     <string name="phone_title">用手机操作</string>
     <string name="phone_body">用连着同一 Wi-Fi 的手机扫描二维码。在手机上搜索并按安装，然后在电视上确认。使用期间请保持此画面打开。</string>
     <string name="phone_offline">这台电视没有连接家庭网络，手机无法连上。请把电视连上 Wi-Fi 或网线后再试。</string>

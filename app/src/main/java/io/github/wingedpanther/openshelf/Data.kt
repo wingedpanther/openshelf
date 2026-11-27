@@ -10,6 +10,7 @@ import android.os.StatFs
 import android.util.LruCache
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -311,14 +312,25 @@ fun fetchBytes(url: String): ByteArray {
     }
 }
 
-fun fetchText(url: String): String {
+class RateLimited(val until: Long) : java.io.IOException("GitHub rate limit")
+
+fun fetchText(url: String, token: String = if (url.startsWith(GitHub.API)) Prefs.githubToken else ""): String {
+    if (url.startsWith(GitHub.API) && GitHub.limited) throw RateLimited(GitHub.limitedUntil)
     val conn = URL(url).openConnection() as HttpURLConnection
     return try {
         conn.connectTimeout = 15_000
         conn.readTimeout = 15_000
         conn.setRequestProperty("Accept", "application/vnd.github+json")
         conn.setRequestProperty("User-Agent", "OpenShelf (+https://github.com/wingedpanther/openshelf)")
-        if (conn.responseCode !in 200..299) error("HTTP ${conn.responseCode}")
+        if (token.isNotEmpty()) conn.setRequestProperty("Authorization", "Bearer $token")
+        val code = conn.responseCode
+        if (code == 401 && token.isNotEmpty()) return fetchText(url, "")
+        if ((code == 403 || code == 429) && url.startsWith(GitHub.API) && conn.getHeaderField("X-RateLimit-Remaining") == "0") {
+            val reset = conn.getHeaderField("X-RateLimit-Reset")?.toLongOrNull()?.times(1000) ?: (System.currentTimeMillis() + 60 * 60 * 1000L)
+            GitHub.limitedUntil = reset
+            throw RateLimited(reset)
+        }
+        if (code !in 200..299) error("HTTP $code")
         conn.inputStream.bufferedReader().use { it.readText() }
     } finally {
         conn.disconnect()
@@ -328,7 +340,40 @@ fun fetchText(url: String): String {
 data class ReleaseInfo(val tag: String, val notes: String, val apks: List<Apk>, val date: String = "")
 
 object GitHub {
+    const val API = "https://api.github.com/"
+    private const val KEPT = 400
     private val releases = HashMap<String, ReleaseInfo>()
+    private var saved: File? = null
+
+    var limitedUntil by mutableLongStateOf(0L)
+    val limited get() = System.currentTimeMillis() < limitedUntil
+
+    fun limitMessage() = str(R.string.github_limit, java.text.SimpleDateFormat("HH:mm", java.util.Locale.ROOT).format(java.util.Date(limitedUntil)))
+
+    fun init(ctx: Context) = use(File(ctx.filesDir, "releases"))
+
+    internal fun use(dir: File) {
+        saved = dir.apply { mkdirs() }
+    }
+
+    private fun savedFile(key: String) = saved?.let { File(it, java.security.MessageDigest.getInstance("SHA-1").digest(key.toByteArray()).joinToString("") { b -> "%02x".format(b) } + ".json") }
+
+    internal fun load(key: String): ReleaseInfo? = runCatching {
+        val o = JSONObject(savedFile(key)!!.readText())
+        ReleaseInfo(o.getString("tag"), o.getString("notes"), o.getJSONArray("apks").let { a ->
+            (0 until a.length()).map { a.getJSONObject(it) }.map { Apk(it.getString("name"), it.getString("abi"), it.getString("url"), it.getLong("size")) }
+        }, o.optString("date"))
+    }.getOrNull()
+
+    internal fun keep(key: String, info: ReleaseInfo) {
+        val dir = saved ?: return
+        runCatching {
+            val apks = JSONArray(info.apks.map { JSONObject().put("name", it.name).put("abi", it.abi).put("url", it.url).put("size", it.size) })
+            savedFile(key)!!.writeText(JSONObject().put("tag", info.tag).put("notes", info.notes).put("date", info.date).put("apks", apks).toString())
+            val files = dir.listFiles().orEmpty()
+            if (files.size > KEPT) files.sortedBy { it.lastModified() }.take(files.size - KEPT).forEach { it.delete() }
+        }
+    }
     private val shots = HashMap<String, List<String>>()
     private val skip = Regex("debug|unsigned|(^|[-_.])root[-_.]|geckoIncluded|test", RegexOption.IGNORE_CASE)
     private val tvHint = Regex("(^|[-_.])(tv|androidtv|atv|leanback|firetv)([-_.]|$)", RegexOption.IGNORE_CASE)
@@ -343,9 +388,9 @@ object GitHub {
         val key = "$repo@$tag"
         releases[key]?.let { return it }
         val info = withContext(Dispatchers.IO) {
-            runCatching {
-                val o = JSONObject(fetchText("https://api.github.com/repos/$repo/releases/tags/${java.net.URLEncoder.encode(tag, "UTF-8")}"))
-                info(o, tag)
+            load(key) ?: runCatching {
+                val o = JSONObject(fetchText("${API}repos/$repo/releases/tags/${java.net.URLEncoder.encode(tag, "UTF-8")}"))
+                info(o, tag).also { keep(key, it) }
             }.getOrNull()
         } ?: return null
         releases[key] = info
@@ -357,7 +402,7 @@ object GitHub {
         releases[key]?.let { return it }
         val info = withContext(Dispatchers.IO) {
             runCatching {
-                val o = JSONObject(fetchText("https://api.github.com/repos/$repo/releases/latest"))
+                val o = JSONObject(fetchText("${API}repos/$repo/releases/latest"))
                 if (o.optBoolean("prerelease") || o.optBoolean("draft")) null else info(o, o.getString("tag_name"))
             }.getOrNull()
         } ?: return null
@@ -690,6 +735,14 @@ object Prefs {
     var autoCheckSelf by mutableStateOf(true)
         private set
 
+    var githubToken by mutableStateOf("")
+        private set
+
+    fun saveGithubToken(token: String) {
+        githubToken = token.trim()
+        file.edit().putString("githubToken", githubToken).apply()
+    }
+
     var appSort by mutableIntStateOf(0)
         private set
 
@@ -744,6 +797,7 @@ object Prefs {
         hideStreams = file.getBoolean("hideStreams", true)
         minStars = file.getInt("minStars", 10).takeIf { it in starSteps } ?: 10
         autoCheckSelf = file.getBoolean("autoCheckSelf", true)
+        githubToken = file.getString("githubToken", "").orEmpty()
         appSort = file.getInt("appSort", 0).coerceIn(0..2)
         language = file.getInt("language", 0).coerceIn(languages.indices)
     }

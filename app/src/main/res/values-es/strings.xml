@@ -323,6 +323,11 @@
     <string name="set_phone">Usar el móvil</string>
     <string name="phone_value">Abrir</string>
     <string name="phone_help">Busca y elige apps en el móvil y la TV las instala. El móvil tiene que estar en la misma wifi.</string>
+    <string name="set_github">Token de GitHub</string>
+    <string name="github_on">Añadido</string>
+    <string name="github_off">Sin añadir</string>
+    <string name="set_github_help">Sin token, GitHub permite 60 consultas por hora para notas de versión, versiones anteriores e instalaciones por owner/repo. Con uno permite 5000. Pulsa OK para añadir uno desde el móvil o quitar el que añadiste.</string>
+    <string name="github_limit">El límite de GitHub para esta conexión se agotó hasta las %1$s. Las notas de versión y las instalaciones por owner/repo esperarán hasta entonces. Un token de GitHub en Ajustes sube el límite.</string>
     <string name="phone_title">Usa tu móvil</string>
     <string name="phone_body">Escanea el código con el móvil en la misma wifi. Busca allí, pulsa Instalar y confirma en la TV. Deja esta pantalla abierta mientras lo usas.</string>
     <string name="phone_offline">Esta TV no está en una red doméstica y el móvil no puede llegar a ella. Conéctala por wifi o cable y vuelve a intentarlo.</string>

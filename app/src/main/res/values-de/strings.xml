@@ -323,6 +323,11 @@
     <string name="set_phone">Handy als Fernbedienung</string>
     <string name="phone_value">Öffnen</string>
     <string name="phone_help">Suche Apps auf dem Handy aus, und der Fernseher installiert sie. Das Handy muss im selben WLAN sein.</string>
+    <string name="set_github">GitHub-Token</string>
+    <string name="github_on">Hinzugefügt</string>
+    <string name="github_off">Nicht hinzugefügt</string>
+    <string name="set_github_help">Ohne Token erlaubt GitHub 60 Abfragen pro Stunde für Versionshinweise, ältere Versionen und Installationen per owner/repo. Mit Token sind es 5.000. Drücke OK, um einen vom Handy hinzuzufügen oder den vorhandenen zu entfernen.</string>
+    <string name="github_limit">Das GitHub-Limit für diese Verbindung ist bis %1$s aufgebraucht. Versionshinweise und Installationen per owner/repo warten bis dahin. Ein GitHub-Token in den Einstellungen erhöht das Limit.</string>
     <string name="phone_title">Mit dem Handy steuern</string>
     <string name="phone_body">Scanne den Code mit dem Handy im selben WLAN. Such dort, drück Installieren und bestätige am Fernseher. Lass diese Anzeige offen, solange du es benutzt.</string>
     <string name="phone_offline">Dieser Fernseher ist in keinem Heimnetz, das Handy erreicht ihn nicht. Verbinde ihn mit WLAN oder LAN und versuche es noch einmal.</string>

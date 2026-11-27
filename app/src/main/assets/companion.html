@@ -27,6 +27,7 @@ button:disabled { background: transparent; color: var(--stone); border: 1px soli
 h2 { font-size: 15px; color: var(--stone); font-weight: 600; margin: 26px 0 4px; }
 .note { color: var(--stone); font-size: 13.5px; margin-top: 8px; }
 .err { background: var(--deep); padding: 14px; border-radius: 12px; }
+a { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -43,6 +44,9 @@ h2 { font-size: 15px; color: var(--stone); font-weight: 600; margin: 26px 0 4px;
   <h2>Send an APK from this phone</h2>
   <div class="gh"><input id="file" type="file" accept=".apk,application/vnd.android.package-archive"><button id="send">Send</button></div>
   <div class="note" id="filenote">Pick an .apk file and your TV installs it. Android asks you to confirm on the TV first. Split bundles (.apks, .xapk) won’t work.</div>
+  <h2>GitHub token</h2>
+  <div class="gh"><input id="ghtoken" type="password" placeholder="github_pat_… or ghp_…" autocapitalize="off" autocorrect="off" autocomplete="off"><button id="savetoken">Save</button><button id="droptoken" hidden>Remove</button></div>
+  <div class="note" id="tokennote">Optional. Without a token, GitHub allows 60 lookups an hour for release notes, older versions and owner/repo installs. With one it allows 5,000. <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Create a token on GitHub</a> without adding any permissions, then paste it here. Open Shelf only sends it to GitHub.</div>
 </main>
 <script>
 const token = new URLSearchParams(location.search).get("t") || "";
@@ -124,8 +128,32 @@ $("send").addEventListener("click", () => {
   $("send").disabled = true;
   x.send(f);
 });
+const tokenNotes = {
+  bad: "GitHub didn’t accept that token. Check you copied all of it.",
+  net: "The TV couldn’t reach GitHub to check the token. Try again in a minute.",
+};
+function tokenSaved(saved) {
+  $("droptoken").hidden = !saved;
+  $("ghtoken").placeholder = saved ? "A token is saved on your TV" : "github_pat_… or ghp_…";
+}
+$("savetoken").addEventListener("click", async () => {
+  const t = $("ghtoken").value.trim(); if (!t) return;
+  $("savetoken").disabled = true;
+  $("tokennote").textContent = "Checking the token with GitHub…";
+  const r = await api("/api/github", { token: t }).catch(fail);
+  $("savetoken").disabled = false;
+  if (!r) return;
+  $("ghtoken").value = "";
+  $("tokennote").textContent = r.ok ? "Saved. Your TV can now make " + r.limit.toLocaleString() + " GitHub lookups an hour." : tokenNotes[r.error] || "That didn’t work. Try again.";
+  if (r.ok) tokenSaved(true);
+});
+$("droptoken").addEventListener("click", async () => {
+  const r = await api("/api/github", { token: " " }).catch(fail);
+  if (r && r.ok) { tokenSaved(false); $("tokennote").textContent = "Removed. Your TV is back to 60 GitHub lookups an hour."; }
+});
 const poll = setInterval(status, 2000);
 search(); status();
+api("/api/github").then((r) => tokenSaved(r.saved)).catch(() => {});
 </script>
 </body>
 </html>

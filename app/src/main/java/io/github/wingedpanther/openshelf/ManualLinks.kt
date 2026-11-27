@@ -84,7 +84,7 @@ object ManualLinks {
         val repo = parseRepo(input)
             ?: return LinkResult.Error(str(R.string.link_err_url))
         if (links.any { it.repo == repo && it.pkg != expectedPkg }) return LinkResult.Error(str(R.string.link_err_duplicate))
-        val rel = GitHub.latest(repo) ?: return LinkResult.Error(str(R.string.link_err_release))
+        val rel = GitHub.latest(repo) ?: return LinkResult.Error(if (GitHub.limited) GitHub.limitMessage() else str(R.string.link_err_release))
         if (rel.apks.isEmpty()) return LinkResult.Error(str(R.string.link_err_no_apk))
         val picked = pickApkFromList(rel.apks)
             ?: return LinkResult.Error(str(R.string.link_err_abi))

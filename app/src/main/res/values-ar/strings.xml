@@ -351,6 +351,11 @@
     <string name="set_phone">التحكم من الهاتف</string>
     <string name="phone_value">فتح</string>
     <string name="phone_help">ابحث عن التطبيقات واخترها من هاتفك وسيثبّتها التلفاز. يجب أن يكون هاتفك على شبكة Wi-Fi نفسها.</string>
+    <string name="set_github">رمز GitHub</string>
+    <string name="github_on">مُضاف</string>
+    <string name="github_off">غير مُضاف</string>
+    <string name="set_github_help">بدون رمز يسمح GitHub بـ 60 طلبًا في الساعة لملاحظات الإصدار والإصدارات الأقدم والتثبيت عبر owner/repo. ومع رمز يسمح بـ 5000. اضغط OK لإضافة رمز من هاتفك أو لإزالة الرمز الذي أضفته.</string>
+    <string name="github_limit">نفد حد GitHub لهذا الاتصال حتى %1$s. ستنتظر ملاحظات الإصدار والتثبيت عبر owner/repo حتى ذلك الوقت. رمز GitHub في الإعدادات يرفع الحد.</string>
     <string name="phone_title">استخدم هاتفك</string>
     <string name="phone_body">امسح الرمز بهاتفك وهو على شبكة Wi-Fi نفسها. ابحث هناك واضغط تثبيت ثم أكّد على التلفاز. اترك هذه الشاشة مفتوحة أثناء الاستخدام.</string>
     <string name="phone_offline">هذا التلفاز ليس على شبكة منزلية، فلا يستطيع هاتفك الوصول إليه. صِله بشبكة Wi-Fi أو سلكية وحاول مرة أخرى.</string>

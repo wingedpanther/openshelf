@@ -14,6 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         Tls.init(this)
         Prefs.init(this)
+        GitHub.init(this)
         ManualLinks.init(this)
         Lock.init(this)
         L.init(this)

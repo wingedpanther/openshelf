@@ -147,6 +147,7 @@ fun OpenShelf() {
     val tabRequesters = remember { Tab.entries.associateWith { FocusRequester() } }
     val handoff = remember { FocusHandoff() }
     var newsList by remember { mutableStateOf<List<App>?>(null) }
+    var limitShown by remember { mutableStateOf(0L) }
     val ctx = LocalContext.current
     LaunchedEffect(Device.tick) {
         Catalog.load(ctx)
@@ -221,11 +222,14 @@ fun OpenShelf() {
             updates = updates,
         )
         val news = CatalogUpdate.news
+        val limitedUntil = GitHub.limitedUntil
         if (news.isNotEmpty()) {
-            NewsNotice(news, Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp), { newsList = news.take(NEWS_LISTED) }) { hadFocus ->
+            Notice(newsText(news), Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp), str(R.string.news_see), { newsList = news.take(NEWS_LISTED) }) { hadFocus ->
                 CatalogUpdate.news = emptyList()
                 if (hadFocus) handoff.pending = true
             }
+        } else if (limitedUntil > limitShown) {
+            Notice(GitHub.limitMessage(), Modifier.align(Alignment.BottomCenter).padding(bottom = 32.dp), null, {}) { limitShown = limitedUntil }
         }
     }
 
@@ -257,7 +261,7 @@ fun OpenShelf() {
     }
 }
 
-private const val NEWS_SHOWN = 10_000L
+private const val NOTICE_SHOWN = 10_000L
 private const val NEWS_LISTED = 60
 
 private fun newsText(news: List<App>): String =
@@ -265,27 +269,31 @@ private fun newsText(news: List<App>): String =
     else plural(R.plurals.news_many, news.size, news.size, str(R.string.news_and, news[0].name, news[1].name))
 
 @Composable
-private fun NewsNotice(news: List<App>, modifier: Modifier, onOpen: () -> Unit, onDone: (Boolean) -> Unit) {
+private fun Notice(text: String, modifier: Modifier, action: String?, onAction: () -> Unit, onDone: (Boolean) -> Unit) {
     val button = remember { FocusRequester() }
     var focused by remember { mutableStateOf(false) }
-    LaunchedEffect(news) {
-        delay(60)
-        runCatching { button.requestFocus() }
-        delay(NEWS_SHOWN)
+    LaunchedEffect(text) {
+        if (action != null) {
+            delay(60)
+            runCatching { button.requestFocus() }
+        }
+        delay(NOTICE_SHOWN)
         onDone(focused)
     }
     Row(
         modifier.widthIn(max = 760.dp).shadow(16.dp, RoundedCornerShape(18.dp))
             .background(C.Mat, RoundedCornerShape(18.dp))
             .onFocusChanged { focused = it.hasFocus }
-            .padding(start = 22.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+            .padding(start = 22.dp, end = if (action != null) 10.dp else 24.dp, top = if (action != null) 8.dp else 15.dp, bottom = if (action != null) 8.dp else 15.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Image(painterResource(C.mark), null, Modifier.size(22.dp))
         Spacer(Modifier.width(12.dp))
-        T(newsText(news), 14.5.sp, Modifier.weight(1f, fill = false), maxLines = 2)
-        Spacer(Modifier.width(14.dp))
-        Pill(str(R.string.news_see), onOpen, solid = true, requester = button)
+        T(text, 14.5.sp, Modifier.weight(1f, fill = false), maxLines = 2)
+        if (action != null) {
+            Spacer(Modifier.width(14.dp))
+            Pill(action, onAction, solid = true, requester = button)
+        }
     }
 }
 
@@ -1290,7 +1298,7 @@ private fun SearchScreen(query: String, onQuery: (String) -> Unit, openApp: (Str
                         }
                     }
                 }, solid = true, icon = Icons.Link)
-                if (failed) T(str(R.string.direct_failed), 13.5.sp, Modifier.padding(start = 10.dp), color = C.Stone)
+                if (failed) T(if (GitHub.limited) GitHub.limitMessage() else str(R.string.direct_failed), 13.5.sp, Modifier.padding(start = 10.dp), color = C.Stone)
             }
         } else if (q.isNotEmpty() && results.isEmpty()) {
             T(str(R.string.search_tip), 15.5.sp, side.padding(top = 10.dp), color = C.Stone)
@@ -1749,6 +1757,8 @@ private fun SettingsScreen(openApp: (String) -> Unit, handoff: FocusHandoff) {
         },
         Setting(str(R.string.set_phone), str(R.string.phone_value),
             str(R.string.phone_help)) { showPhone = true },
+        Setting(str(R.string.set_github), str(if (Prefs.githubToken.isNotEmpty()) R.string.github_on else R.string.github_off),
+            str(R.string.set_github_help)) { if (Prefs.githubToken.isNotEmpty()) Prefs.saveGithubToken("") else showPhone = true },
         Setting(str(R.string.set_backup), plural(R.plurals.apps, backup.size, backup.size),
             str(R.string.backup_help)) { showBackup = true },
         Setting(str(R.string.set_restore), str(R.string.restore_value),

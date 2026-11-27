@@ -315,6 +315,11 @@
     <string name="set_phone">手機助手</string>
     <string name="phone_value">開啟</string>
     <string name="phone_help">在手機上搜尋並選擇應用程式，電視會幫你安裝。手機需連上同一個 Wi-Fi。</string>
+    <string name="set_github">GitHub 權杖</string>
+    <string name="github_on">已新增</string>
+    <string name="github_off">未新增</string>
+    <string name="set_github_help">沒有權杖時，GitHub 每小時只允許 60 次查詢，用於版本說明、舊版本和 owner/repo 安裝。有權杖時為 5000 次。按 OK 可從手機新增權杖，或移除已新增的權杖。</string>
+    <string name="github_limit">此網路的 GitHub 限額已用完，%1$s 恢復。版本說明和 owner/repo 安裝會等到那時。在設定中新增 GitHub 權杖可以提高限額。</string>
     <string name="phone_title">用手機操作</string>
     <string name="phone_body">用連著同一個 Wi-Fi 的手機掃描 QR 碼。在手機上搜尋並按安裝，然後在電視上確認。使用期間請保持此畫面開啟。</string>
     <string name="phone_offline">這台電視沒有連上家用網路，手機無法連線。請把電視連上 Wi-Fi 或網路線後再試。</string>

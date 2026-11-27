@@ -315,6 +315,11 @@
     <string name="set_phone">スマホから操作</string>
     <string name="phone_value">開く</string>
     <string name="phone_help">スマホでアプリを探して選ぶと、テレビがインストールします。スマホは同じWi-Fiにつないでください。</string>
+    <string name="set_github">GitHub トークン</string>
+    <string name="github_on">追加済み</string>
+    <string name="github_off">未追加</string>
+    <string name="set_github_help">トークンがない場合、GitHub はリリースノート、旧バージョン、owner/repo からのインストールの取得を1時間に60回までに制限します。トークンがあれば5,000回です。OK を押すとスマホから追加できます。追加済みの場合は削除します。</string>
+    <string name="github_limit">この接続の GitHub の上限に達しました（%1$s まで）。リリースノートと owner/repo からのインストールはそれまで待機します。設定で GitHub トークンを追加すると上限が上がります。</string>
     <string name="phone_title">スマホで操作</string>
     <string name="phone_body">同じWi-Fiのスマホでコードを読み取ってください。スマホで検索してインストールを押し、テレビで確認します。使っている間はこの画面を開いたままにしてください。</string>
     <string name="phone_offline">このテレビはホームネットワークにつながっていないため、スマホから接続できません。Wi-Fiか有線LANにつないで、もう一度試してください。</string>
