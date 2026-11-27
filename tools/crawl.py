@@ -152,7 +152,7 @@ fragment R on Repository {
   defaultBranchRef { name }
   repositoryTopics(first: 12) { nodes { topic { name } } }
   latestRelease { tagName publishedAt releaseAssets(first: 50) { nodes { name size downloadUrl downloadCount digest } } }
-  releases(first: 5, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { tagName publishedAt isPrerelease isDraft releaseAssets(first: 30) { nodes { name downloadCount } } } }
+  releases(first: 15, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { tagName publishedAt isPrerelease isDraft releaseAssets(first: 30) { nodes { name size downloadUrl downloadCount digest } } } }
 }"""
 
 def enrich(work: Path):
@@ -258,24 +258,51 @@ def abi_of(name):
 def family(name):
     return re.sub(r"[-_.]+", "-", ABI_TOKEN.sub(r"\1", name.lower()))
 
+def apk_assets(rel):
+    apks = [a for a in (rel.get("releaseAssets") or {}).get("nodes") or []
+            if a and a["name"].lower().endswith(".apk") and not SKIP_ASSET.search(a["name"])]
+    apks.sort(key=lambda a: (not TV_HINT.search(a["name"]), bool(PHONE_HINT.search(a["name"])),
+                             abi_of(a["name"]) not in ("armeabi-v7a", "any", "universal"), a.get("size") or 0))
+    return apks
+
+def recent(rel):
+    return TODAY - datetime.fromisoformat(rel["publishedAt"].replace("Z", "+00:00")) <= MAX_AGE
+
+def tv_named(rel):
+    return bool(TV_HINT.search(rel["tagName"])) or any(TV_HINT.search(a["name"]) for a in apk_assets(rel))
+
+def tv_release(m):
+    rel = m.get("latestRelease")
+    if rel and any(TV_HINT.search(a["name"]) for a in apk_assets(rel)):
+        return None
+    for r in (m.get("releases") or {}).get("nodes") or []:
+        if not r or r["isPrerelease"] or r["isDraft"] or (rel and r["tagName"] == rel["tagName"]) or not recent(r):
+            continue
+        if apk_assets(r) and tv_named(r):
+            return r
+    return None
+
 def candidates(meta):
     out = {}
     for full, m in meta.items():
         if not m or (m["isFork"] and not m.get("forkOf") and not m.get("port") and not m.get("variant")):
             continue
+        groups = []
         rel = m.get("latestRelease")
-        if not rel:
-            continue
-        published = datetime.fromisoformat(rel["publishedAt"].replace("Z", "+00:00"))
-        if TODAY - published > MAX_AGE:
-            continue
-        apks = [a for a in rel["releaseAssets"]["nodes"] if a["name"].lower().endswith(".apk") and not SKIP_ASSET.search(a["name"])]
-        if not apks:
-            continue
-        apks.sort(key=lambda a: (not TV_HINT.search(a["name"]), bool(PHONE_HINT.search(a["name"])),
-                                 abi_of(a["name"]) not in ("armeabi-v7a", "any", "universal"), a["size"]))
-        out[full] = apks
+        if rel and recent(rel) and apk_assets(rel):
+            groups.append((rel["tagName"], apk_assets(rel)))
+        alt = tv_release(m)
+        if alt:
+            groups.append((alt["tagName"], apk_assets(alt)))
+        if groups:
+            out[full] = groups
     return out
+
+def release_for(m, tag):
+    rel = m.get("latestRelease")
+    if tag and (not rel or rel["tagName"] != tag):
+        return next((r for r in (m.get("releases") or {}).get("nodes") or [] if r and r["tagName"] == tag), rel)
+    return rel
 
 class RangeFile(io.RawIOBase):
     BLOCK = 64 * 1024
@@ -481,11 +508,15 @@ def inspect(work: Path):
         tried = found.get(full)
         if tried is None or not any(t.get("leanback") for t in tried) and any("error" in t for t in tried):
             return True
-        rel = meta[full]["latestRelease"]
-        tags = {t.get("tag") for t in tried} - {None}
         if any(t.get("leanback") and "perms" not in t for t in tried):
             return True
-        return rel["tagName"] not in tags if tags else rel["publishedAt"][:10] >= CRAWLED_BEFORE
+        tags = {t.get("tag") for t in tried} - {None}
+        if not tags:
+            return (meta[full].get("latestRelease") or {}).get("publishedAt", "")[:10] >= CRAWLED_BEFORE
+        wanted = {tag for tag, _ in cands[full]}
+        if any(t.get("leanback") and t.get("tag") in wanted for t in tried):
+            return False
+        return not wanted <= tags
 
     todo = [r for r in cands if stale(r)]
     log(f"inspect: {len(todo)} of {len(cands)} candidates to read")
@@ -493,29 +524,29 @@ def inspect(work: Path):
 
     def work_on(full):
         tried = []
-        tag = meta[full]["latestRelease"]["tagName"]
-        for asset in cands[full][:3]:
-            for wait in (30, 60, 120, 0):
-                try:
-                    facts = inspect_one(asset)
-                    break
-                except urllib.error.URLError as e:
-                    if not wait or not isinstance(e.reason, OSError):
+        for tag, apks in cands[full]:
+            for asset in apks[:3]:
+                for wait in (30, 60, 120, 0):
+                    try:
+                        facts = inspect_one(asset)
+                        break
+                    except urllib.error.URLError as e:
+                        if not wait or not isinstance(e.reason, OSError):
+                            facts = e
+                            break
+                        time.sleep(wait)
+                    except Exception as e:
                         facts = e
                         break
-                    time.sleep(wait)
-                except Exception as e:
-                    facts = e
-                    break
-            if isinstance(facts, Exception):
-                e = facts
-                tried.append({"asset": asset["name"], "tag": tag, "error": str(e)[:200]})
-                continue
-            facts["asset"] = asset["name"]
-            facts["tag"] = tag
-            tried.append(facts)
-            if facts["leanback"]:
-                break
+                if isinstance(facts, Exception):
+                    e = facts
+                    tried.append({"asset": asset["name"], "tag": tag, "error": str(e)[:200]})
+                    continue
+                facts["asset"] = asset["name"]
+                facts["tag"] = tag
+                tried.append(facts)
+                if facts["leanback"]:
+                    return full, tried
         return full, tried
 
     done = 0
@@ -638,8 +669,8 @@ def short_code(full, taken):
     taken.add(n)
     return n
 
-def downloads(m):
-    return sum(a.get("downloadCount") or 0 for r in ((m.get("releases") or {}).get("nodes") or []) if r and not r["isPrerelease"] and not r["isDraft"]
+def downloads(nodes):
+    return sum(a.get("downloadCount") or 0 for r in nodes
                for a in ((r.get("releaseAssets") or {}).get("nodes") or []) if a and a["name"].lower().endswith(".apk"))
 
 def build(work: Path, out_path: Path):
@@ -670,9 +701,13 @@ def build(work: Path, out_path: Path):
             source = next((t for t in inspected.get(m["parent"]["nameWithOwner"], []) if t.get("leanback")), {})
             if tv["package"] == source.get("package"):
                 continue
-        rel = m.get("latestRelease")
+        rel = release_for(m, tv.get("tag"))
         if not rel or not rel.get("releaseAssets"):
             continue
+        nodes = [r for r in (m.get("releases") or {}).get("nodes") or [] if r]
+        if rel is m.get("latestRelease"):
+            nodes = nodes[:5]
+        shipped = [r for r in nodes if not r["isPrerelease"] and not r["isDraft"] and (rel is m.get("latestRelease") or tv_named(r))]
         parent = meta.get(m.get("forkOf") or "") or {}
         picked = tv["asset"]
         assets = [a for a in (rel["releaseAssets"]["nodes"] or []) if a and a["name"].lower().endswith(".apk") and not SKIP_ASSET.search(a["name"])]
@@ -711,7 +746,7 @@ def build(work: Path, out_path: Path):
             "licence": ((m.get("licenseInfo") or {}).get("spdxId") or None),
             "archived": m["isArchived"],
             "pushed": (m.get("pushedAt") or "")[:10] or None,
-            "downloads": downloads(m),
+            "downloads": downloads(shipped),
             "perms": tv.get("perms", []),
             "version": rel["tagName"],
             "date": rel["publishedAt"][:10],
@@ -719,8 +754,7 @@ def build(work: Path, out_path: Path):
             "art": {k: v for k, v in a.items() if v and k != "title"},
             "apks": [{"name": x["name"], "abi": abi_of(x["name"]), "url": x["downloadUrl"], "size": x["size"],
                       **({"sha256": x["digest"][7:]} if (x.get("digest") or "").startswith("sha256:") else {})} for x in assets],
-            "releases": [{"tag": r["tagName"], "date": r["publishedAt"][:10]}
-                         for r in m["releases"]["nodes"] if not r["isPrerelease"] and not r["isDraft"]][:4],
+            "releases": [{"tag": r["tagName"], "date": r["publishedAt"][:10]} for r in shipped][:4],
         }
         if app["licence"] == "NOASSERTION":
             app["licence"] = None

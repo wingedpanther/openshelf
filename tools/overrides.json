@@ -1,6 +1,8 @@
 {
   "extra": [
-    "nova-video-player/aos-AVP"
+    "nova-video-player/aos-AVP",
+    "TheARCreactorGUY/EuthopiarTV",
+    "Syha-01/Tsuzuku"
   ],
   "hide": [
     "s1ddhants1/SwiftBackupPrem",
@@ -9,6 +11,7 @@
     "Xposed-Modules-Repo/io.github.s1ddhants1.swiftbackupprem"
   ],
   "names": {
+    "TheARCreactorGUY/EuthopiarTV": "Euthopiar TV",
     "jellyfin/jellyfin-androidtv": "Jellyfin",
     "moonlight-stream/moonlight-android": "Moonlight",
     "nova-video-player/aos-AVP": "Nova Video Player",
