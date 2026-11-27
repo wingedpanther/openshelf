@@ -2,7 +2,8 @@
 
 Usage: VT_KEY=... python3 -I tools/scan.py <catalog.json> <work-dir> [previous-catalog.json ...]
 Results are kept in <work-dir>/vt.json and carried over from earlier catalogs, so each run
-only asks about files it hasn't seen. The free API allows 4 lookups a minute and 500 a day.
+only asks about files it hasn't seen. The weekly catalog run and the daily VirusTotal run
+share that file through the Actions cache. The free API allows 4 lookups a minute and 500 a day.
 VT_MINUTES (default 80) and VT_LIMIT (default 450) cap a run. Without VT_KEY nothing is
 looked up and earlier results are still added.
 """
@@ -54,6 +55,7 @@ def main():
         print(__doc__)
         return 2
     catalog, work = Path(sys.argv[1]), Path(sys.argv[2])
+    work.mkdir(parents=True, exist_ok=True)
     cache_path = work / "vt.json"
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     for old in sys.argv[3:]:
@@ -102,7 +104,6 @@ def main():
                 scanned += 1
                 hit = hit or r["bad"] > 0
         flagged += hit
-    work.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(cache))
     catalog.write_text(json.dumps(meta, ensure_ascii=False, separators=(",", ":")))
     print(f"scan: asked {asked} of {len(order)} due, {found} known to VirusTotal; {scanned} APKs have results, {flagged} apps flagged by at least one scanner"

@@ -1,0 +1,43 @@
+name: VirusTotal
+
+on:
+  schedule:
+    - cron: "0 9 * * 0,2-6"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 140
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache/restore@v4
+        with:
+          path: vt
+          key: vt-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: vt-
+
+      - name: Look up APKs on VirusTotal
+        env:
+          VT_KEY: ${{ secrets.VT_KEY }}
+          VT_LIMIT: "400"
+          VT_MINUTES: "120"
+        timeout-minutes: 130
+        run: |
+          curl -fsSL https://wingedpanther.github.io/openshelf/catalog.json -o "$RUNNER_TEMP/catalog.json"
+          python3 -I tools/scan.py "$RUNNER_TEMP/catalog.json" vt "$RUNNER_TEMP/catalog.json"
+
+      - name: Keep VirusTotal results
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: vt
+          key: vt-${{ github.run_id }}-${{ github.run_attempt }}
