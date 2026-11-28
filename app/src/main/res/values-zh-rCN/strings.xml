@@ -173,6 +173,8 @@
     <string name="details">详情</string>
     <string name="section_other">这台电视上的其他应用</string>
     <string name="not_in_list">不在 Open Shelf 列表中</string>
+    <string name="other_listed">Open Shelf 有自己的版本</string>
+    <string name="other_view">在 Open Shelf 中查看</string>
 
     <string name="set_accent">强调色</string>
     <string name="set_accent_help">为焦点环、聚焦按钮以及标记已安装应用的圆点着色。按 OK 键尝试下一个颜色。</string>

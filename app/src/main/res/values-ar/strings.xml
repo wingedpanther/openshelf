@@ -181,6 +181,8 @@
     <string name="details">التفاصيل</string>
     <string name="section_other">تطبيقات أخرى على شاشتك</string>
     <string name="not_in_list">غير موجودة في قائمة Open Shelf</string>
+    <string name="other_listed">لدى Open Shelf نسخة خاصة به</string>
+    <string name="other_view">عرض في Open Shelf</string>
 
     <string name="set_accent">لون التمييز</string>
     <string name="set_accent_help">يغيّر لون إطار التحديد بالريموت، والأزرار، وعلامة التطبيقات المثبّتة. اضغط OK لتجربة اللون التالي.</string>

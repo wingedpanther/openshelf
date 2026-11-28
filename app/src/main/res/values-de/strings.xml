@@ -179,6 +179,8 @@
     <string name="details">Details</string>
     <string name="section_other">Weitere Apps auf diesem TV</string>
     <string name="not_in_list">nicht in der Liste von Open Shelf</string>
+    <string name="other_listed">Open Shelf hat eine eigene Version</string>
+    <string name="other_view">In Open Shelf ansehen</string>
 
     <string name="set_accent">Akzentfarbe</string>
     <string name="set_accent_help">Färbt Fokusring, fokussierten Button und den Punkt für installierte Apps. Drücke OK, um die nächste auszuprobieren.</string>

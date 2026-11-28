@@ -1390,6 +1390,18 @@ private fun otherApps(ctx: Context, exclude: Set<String>): List<LocalApp> {
         .sortedBy { it.label.lowercase() }
 }
 
+private fun plainName(s: String) = s.lowercase().filter { it.isLetterOrDigit() }
+
+private fun vendor(pkg: String): String {
+    val parts = pkg.split('.')
+    return parts.take(if (parts.size > 2 && parts[1] in setOf("github", "gitlab", "codeberg")) 3 else 2).joinToString(".")
+}
+
+internal fun listedAs(label: String, pkg: String, apps: List<App>): App? =
+    plainName(label).takeIf { it.length >= 3 }?.let { name ->
+        apps.filter { plainName(it.name) == name && vendor(it.pkg) == vendor(pkg) }.maxByOrNull { it.stars }
+    }
+
 internal enum class AppSort { Default, Name, Date }
 
 internal fun sortApps(mine: List<Pair<App, Installed>>, sort: AppSort): List<Pair<App, Installed>> = when (sort) {
@@ -1522,6 +1534,7 @@ private fun MyApps(openApp: (String) -> Unit, goDiscover: () -> Unit, handoff: F
             if (otherList.isNotEmpty()) {
                 item { Section(str(R.string.section_other)) }
                 items(otherList, key = { it.pkg }) { o ->
+                    val listed = remember(o.pkg, Catalog.apps) { listedAs(o.label, o.pkg, Catalog.apps) }
                     AppRow(
                         focusRequester = null,
                         onClick = { launch(ctx, o.pkg) },
@@ -1531,8 +1544,12 @@ private fun MyApps(openApp: (String) -> Unit, goDiscover: () -> Unit, handoff: F
                             }
                         },
                         title = o.label,
-                        sub = listOfNotNull(o.version, str(R.string.not_in_list)).joinToString(" · ", transform = L::wrap),
-                        action = { ActionPill(str(R.string.link_action)) { linking = o.pkg to o.label } },
+                        sub = listOfNotNull(o.version, str(if (listed != null) R.string.other_listed else R.string.not_in_list)).joinToString(" · ", transform = L::wrap),
+                        action = {
+                            if (listed != null) ActionPill(str(R.string.other_view)) { openApp(listed.id) }
+                            else ActionPill(str(R.string.link_action)) { linking = o.pkg to o.label }
+                            ActionPill(str(R.string.uninstall)) { uninstall(ctx, o.pkg) }
+                        },
                     ) { f ->
                         MiniPill(str(R.string.action_open), f)
                     }

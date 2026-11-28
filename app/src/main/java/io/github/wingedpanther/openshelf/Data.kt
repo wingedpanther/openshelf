@@ -714,8 +714,10 @@ object Device {
     fun totalBytes(ctx: Context): Long = StatFs(ctx.filesDir.path).totalBytes
 
     fun cacheDir(ctx: Context) = File(ctx.cacheDir, "apks")
-    fun cacheBytes(ctx: Context): Long = cacheDir(ctx).listFiles()?.sumOf { it.length() } ?: 0L
-    fun clearCache(ctx: Context) { cacheDir(ctx).listFiles()?.forEach { it.delete() } }
+    fun sharedCacheDir(ctx: Context): File? = ctx.externalCacheDir?.let { File(it, "apks") }
+    private fun cacheDirs(ctx: Context) = listOfNotNull(cacheDir(ctx), sharedCacheDir(ctx))
+    fun cacheBytes(ctx: Context): Long = cacheDirs(ctx).sumOf { d -> d.listFiles()?.sumOf { it.length() } ?: 0L }
+    fun clearCache(ctx: Context) { cacheDirs(ctx).forEach { d -> d.listFiles()?.forEach { it.delete() } } }
 }
 
 object Prefs {

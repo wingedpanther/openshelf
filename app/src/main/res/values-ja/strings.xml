@@ -173,6 +173,8 @@
     <string name="details">詳細</string>
     <string name="section_other">このテレビのその他のアプリ</string>
     <string name="not_in_list">Open Shelfのリストにありません</string>
+    <string name="other_listed">Open Shelf に別のビルドがあります</string>
+    <string name="other_view">Open Shelf で見る</string>
 
     <string name="set_accent">アクセントカラー</string>
     <string name="set_accent_help">フォーカスリング、フォーカスされたボタン、インストール済みアプリを示す点に色を付けます。OKを押して次の色を試してください。</string>

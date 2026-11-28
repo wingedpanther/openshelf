@@ -161,6 +161,8 @@
     <string name="details">Detalles</string>
     <string name="section_other">Otras apps de este televisor</string>
     <string name="not_in_list">no está en la lista de Open Shelf</string>
+    <string name="other_listed">Open Shelf tiene su propia versión</string>
+    <string name="other_view">Ver en Open Shelf</string>
 
     <string name="set_accent">Color de acento</string>
     <string name="set_accent_help">Colorea el contorno y el botón enfocados y el punto que marca las apps instaladas. Pulsa OK para probar el siguiente.</string>

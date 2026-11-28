@@ -282,10 +282,15 @@ object Installer {
     }
 
     fun handOff(ctx: Context, id: String, file: File): Boolean = runCatching {
-        val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.apks", file)
-        val intent = Intent(Intent.ACTION_VIEW)
-            .setDataAndType(uri, "application/vnd.android.package-archive")
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val intent = Intent(Intent.ACTION_VIEW).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (Build.VERSION.SDK_INT >= 24) {
+            intent.setDataAndType(FileProvider.getUriForFile(ctx, "${ctx.packageName}.apks", file), "application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } else {
+            val dir = Device.sharedCacheDir(ctx)?.apply { mkdirs() } ?: error(str(R.string.err_blocked))
+            dir.listFiles()?.filter { System.currentTimeMillis() - it.lastModified() > 60 * 60 * 1000L }?.forEach { it.delete() }
+            intent.setDataAndType(Uri.fromFile(file.copyTo(File(dir, file.name), overwrite = true)), "application/vnd.android.package-archive")
+        }
         ctx.startActivity(intent)
         jobs.remove(id)
     }.isSuccess
